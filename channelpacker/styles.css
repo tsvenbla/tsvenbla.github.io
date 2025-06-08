@@ -116,6 +116,13 @@ article > section p {
     color: var(--medium-gray);
 }
 
+/* Main Section */
+main h2 {
+    color: var(--dark-gray);
+    margin: 0 0 var(--spacing-lg) 0;
+    font-size: var(--font-size-xl);
+}
+
 /* Form Styles */
 form {
     display: contents;
@@ -128,26 +135,14 @@ fieldset {
     margin: 0 0 var(--spacing-xl) 0;
 }
 
-fieldset:first-of-type {
+/* Channel Upload Fieldsets */
+fieldset[data-channels] {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: var(--spacing-lg);
 }
 
-fieldset:first-of-type > legend {
-    grid-column: 1 / -1;
-}
-
-legend {
-    font-size: var(--font-size-lg);
-    font-weight: 600;
-    color: var(--dark-gray);
-    margin-bottom: var(--spacing-md);
-    width: 100%;
-}
-
-/* Channel Upload Sections */
-fieldset section {
+fieldset[data-channel] {
     background: var(--white);
     border-radius: var(--border-radius-md);
     padding: var(--spacing-lg);
@@ -158,26 +153,26 @@ fieldset section {
     overflow: hidden;
 }
 
-fieldset section:hover {
+fieldset[data-channel]:hover {
     border-color: #667eea;
     transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
 }
 
-fieldset section:has(input[type="file"]:not(:placeholder-shown)) {
+fieldset[data-channel].has-image {
     border-color: var(--success-green);
     border-style: solid;
 }
 
-fieldset section:focus-within {
+fieldset[data-channel]:focus-within {
     outline: 2px solid #667eea;
     outline-offset: 2px;
 }
 
-/* Channel Headers */
-fieldset section header h3 {
+/* Channel Legends */
+fieldset[data-channel] legend {
     font-weight: 600;
-    margin: 0 0 var(--spacing-md) 0;
+    margin-bottom: var(--spacing-md);
     font-size: var(--font-size-xl);
     padding: var(--spacing-xs) var(--spacing-md);
     border-radius: var(--border-radius-lg);
@@ -185,10 +180,10 @@ fieldset section header h3 {
     display: inline-block;
 }
 
-section[data-channel="red"] h3 { background: var(--red-channel); }
-section[data-channel="green"] h3 { background: var(--green-channel); }
-section[data-channel="blue"] h3 { background: var(--blue-channel); }
-section[data-channel="alpha"] h3 { background: var(--alpha-channel); }
+fieldset[data-channel="red"] legend { background: var(--red-channel); }
+fieldset[data-channel="green"] legend { background: var(--green-channel); }
+fieldset[data-channel="blue"] legend { background: var(--blue-channel); }
+fieldset[data-channel="alpha"] legend { background: var(--alpha-channel); }
 
 /* File Input */
 input[type="file"] {
@@ -198,7 +193,7 @@ input[type="file"] {
 }
 
 /* Upload Button */
-fieldset section button {
+fieldset[data-channel] button {
     background: var(--accent-gradient);
     color: var(--white);
     border: none;
@@ -212,22 +207,22 @@ fieldset section button {
     min-height: 44px;
 }
 
-fieldset section button:hover {
+fieldset[data-channel] button:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
-fieldset section button:focus {
+fieldset[data-channel] button:focus {
     outline: 2px solid #667eea;
     outline-offset: 2px;
 }
 
-fieldset section button:active {
+fieldset[data-channel] button:active {
     transform: translateY(0);
 }
 
 /* Invert Checkbox */
-fieldset section label {
+fieldset[data-channel] label {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -238,7 +233,7 @@ fieldset section label {
     color: var(--dark-gray);
 }
 
-fieldset section input[type="checkbox"] {
+fieldset[data-channel] input[type="checkbox"] {
     position: relative;
     opacity: 1;
     pointer-events: auto;
@@ -272,7 +267,7 @@ figure figcaption {
 }
 
 /* Help Text */
-fieldset section > small {
+fieldset[data-channel] > small {
     font-size: var(--font-size-sm);
     color: var(--medium-gray);
     display: block;
@@ -280,7 +275,7 @@ fieldset section > small {
 }
 
 /* Configuration Fieldset */
-fieldset:nth-of-type(2) {
+fieldset[data-config] {
     background: var(--light-gray);
     padding: var(--spacing-lg);
     border-radius: var(--border-radius-md);
@@ -289,7 +284,15 @@ fieldset:nth-of-type(2) {
     gap: var(--spacing-md);
 }
 
-fieldset:nth-of-type(2) label {
+fieldset[data-config] legend {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--dark-gray);
+    margin-bottom: var(--spacing-md);
+    width: 100%;
+}
+
+fieldset[data-config] label {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: var(--spacing-sm);
@@ -298,7 +301,7 @@ fieldset:nth-of-type(2) label {
     color: var(--dark-gray);
 }
 
-fieldset:nth-of-type(2) select {
+fieldset[data-config] select {
     padding: var(--spacing-xs) var(--spacing-sm);
     border: 2px solid var(--border-gray);
     border-radius: var(--spacing-xs);
@@ -307,29 +310,33 @@ fieldset:nth-of-type(2) select {
     transition: border-color var(--transition-fast);
 }
 
-fieldset:nth-of-type(2) select:focus {
+fieldset[data-config] select:focus {
     outline: none;
     border-color: #667eea;
 }
 
-fieldset:nth-of-type(2) small {
+fieldset[data-config] small {
     grid-column: 1 / -1;
     color: var(--medium-gray);
     font-size: var(--font-size-sm);
     margin-top: calc(-1 * var(--spacing-sm));
 }
 
-/* Controls Section */
-main > section {
+/* Controls Fieldset */
+fieldset[data-controls] {
     text-align: center;
-    margin-bottom: var(--spacing-xl);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--spacing-sm);
 }
 
-main > section button:first-of-type {
+fieldset[data-controls] legend {
+    display: none;
+}
+
+/* Pack Button */
+#pack-btn {
     background: var(--success-gradient);
     color: var(--white);
     border: none;
@@ -343,24 +350,25 @@ main > section button:first-of-type {
     min-height: 44px;
 }
 
-main > section button:first-of-type:hover:not(:disabled) {
+#pack-btn:hover:not(:disabled) {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
 }
 
-main > section button:first-of-type:focus {
+#pack-btn:focus {
     outline: 2px solid var(--success-green);
     outline-offset: 2px;
 }
 
-main > section button:first-of-type:disabled {
+#pack-btn:disabled {
     background: #cccccc;
     cursor: not-allowed;
     box-shadow: none;
     transform: none;
 }
 
-main > section button:last-of-type {
+/* Download Button */
+#download-btn {
     background: var(--warning-gradient);
     color: var(--white);
     border: none;
@@ -374,12 +382,12 @@ main > section button:last-of-type {
     min-height: 44px;
 }
 
-main > section button:last-of-type:hover {
+#download-btn:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(255, 152, 0, 0.4);
 }
 
-main > section button:last-of-type:focus {
+#download-btn:focus {
     outline: 2px solid #ff9800;
     outline-offset: 2px;
 }
@@ -440,27 +448,29 @@ output canvas {
         padding: var(--spacing-lg);
     }
     
-    fieldset:first-of-type {
+    fieldset[data-channels] {
         grid-template-columns: 1fr;
     }
     
-    fieldset:nth-of-type(2) label {
+    fieldset[data-config] label {
         grid-template-columns: 1fr;
         gap: var(--spacing-xs);
     }
     
-    main > section {
+    fieldset[data-controls] {
         width: 100%;
     }
     
-    main > section button {
+    #pack-btn,
+    #download-btn {
         width: 100%;
         margin: var(--spacing-xs) 0;
     }
 }
 
 @media (max-width: 480px) {
-    main > section button {
+    #pack-btn,
+    #download-btn {
         padding: 12px 24px;
         font-size: var(--font-size-base);
     }
