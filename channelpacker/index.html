@@ -1,133 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="apple-mobile-web-app-title" content="ChannelPack">
-        <meta name="mobile-web-app-capable" content="yes">
-        <meta name="color-scheme" content="light dark">
-        <script src="script.js" defer></script>
-        <link rel="canonical" href="https://tsvenbla.github.io/channelpacker">
-        <title>tsvenbla's RGBA Channel Packer</title>
-        <meta name="description" content="Free texture channel packer online! Pack multiple grayscale images into RGBA channels for efficient texture storage.">
-        <meta property="og:title" content="tsvenbla's RGBA Channel Packer">
-        <meta property="og:description" content="Free texture channel packer online! Pack multiple grayscale images into RGBA channels for efficient texture storage.">
-        <meta property="og:url" content="https://tsvenbla.github.io/channelpacker">
-        <meta property="og:type" content="website">
-        <meta name="twitter:card" content="summary_large_image">
-        <meta property="twitter:domain" content="tsvenbla.github.io/channelpacker">
-        <meta property="twitter:url" content="https://tsvenbla.github.io/channelpacker">
-        <meta name="twitter:title" content="tsvenbla's RGBA Channel Packer">
-        <meta name="twitter:description" content="Free texture channel packer online! Pack multiple grayscale images into RGBA channels for efficient texture storage.">
-        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-        <link rel="shortcut icon" href="/favicon.ico">
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-        <link rel="manifest" href="/site.webmanifest" type="application/manifest+json">
-        <link rel="stylesheet" href="styles.css">
-    </head>
-    <body id="start">
-        <div class="container">
-            <header>
-                <hgroup>
-                    <a href="/index.html" rel="nofollow noopener noreferrer" aria-label="Go to home page"><h1>🎨 RGBA Channel Packer</h1></a>
-                    <p>Combine grayscale images into a single RGBA texture</p>
-                </hgroup>
-            </header>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-title" content="ChannelPack">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="color-scheme" content="light dark">
+    <script src="script.js" defer></script>
+    <link rel="canonical" href="https://tsvenbla.github.io/channelpacker">
+    <title>tsvenbla's RGBA Channel Packer</title>
+    <meta name="description" content="Free texture channel packer online! Pack multiple grayscale images into RGBA channels for efficient texture storage.">
+    <meta property="og:title" content="tsvenbla's RGBA Channel Packer">
+    <meta property="og:description" content="Free texture channel packer online! Pack multiple grayscale images into RGBA channels for efficient texture storage.">
+    <meta property="og:url" content="https://tsvenbla.github.io/channelpacker">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="twitter:domain" content="tsvenbla.github.io/channelpacker">
+    <meta property="twitter:url" content="https://tsvenbla.github.io/channelpacker">
+    <meta name="twitter:title" content="tsvenbla's RGBA Channel Packer">
+    <meta name="twitter:description" content="Free texture channel packer online! Pack multiple grayscale images into RGBA channels for efficient texture storage.">
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest" type="application/manifest+json">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <article>
+        <header>
+            <hgroup>
+                <a href="https://tsvenbla.github.io/channelpacker/index.html" rel="nofollow noopener noreferrer" aria-label="Go to home page">
+                    <h1>🎨 RGBA Channel Packer</h1>
+                </a>
+                <p>Combine grayscale images into a single RGBA texture</p>
+            </hgroup>
+        </header>
         
-        <section class="info" aria-labelledby="info-heading">
+        <section aria-labelledby="info-heading">
             <h2 id="info-heading">How it works:</h2>
             <p>Upload 2-4 grayscale images that will become the Red, Green, Blue, and Alpha channels of a single packed texture. Missing channels will be filled automatically. This technique is commonly used in game development and 3D graphics for efficient texture storage.</p>
         </section>
 
         <main>
-            <section class="upload-section" aria-labelledby="upload-heading">
-                <h2 id="upload-heading" class="sr-only">Upload Channel Images</h2>
-                
-                <div class="upload-grid">
-                    <div class="channel-upload" id="red-upload" data-channel="red">
-                        <div class="channel-label red-channel">Red Channel</div>
-                        <button class="upload-btn" type="button" aria-describedby="red-help">
-                            📁 Choose Image
-                        </button>
-                        <input type="file" id="red-input" class="file-input" accept="image/*" aria-label="Upload red channel image">
-                        <div class="preview-container" id="red-preview" role="img" aria-label="Red channel preview"></div>
-                        <p id="red-help" class="help-text">Upload a grayscale image for the red channel</p>
-                    </div>
+            <form>
+                <fieldset>
+                    <legend>Upload Channel Images</legend>
+                    
+                    <section data-channel="red">
+                        <header>
+                            <h3>Red Channel</h3>
+                        </header>
+                        <button type="button">📁 Choose Image</button>
+                        <input type="file" accept="image/*" aria-label="Upload red channel image">
+                        <label>
+                            <input type="checkbox" aria-describedby="red-invert-help">
+                            Invert colors
+                        </label>
+                        <small id="red-invert-help">Useful for converting roughness to smoothness maps</small>
+                        <figure role="img" aria-label="Red channel preview"></figure>
+                        <small>Upload a grayscale image for the red channel</small>
+                    </section>
 
-                    <div class="channel-upload" id="green-upload" data-channel="green">
-                        <div class="channel-label green-channel">Green Channel</div>
-                        <button class="upload-btn" type="button" aria-describedby="green-help">
-                            📁 Choose Image
-                        </button>
-                        <input type="file" id="green-input" class="file-input" accept="image/*" aria-label="Upload green channel image">
-                        <div class="preview-container" id="green-preview" role="img" aria-label="Green channel preview"></div>
-                        <p id="green-help" class="help-text">Upload a grayscale image for the green channel</p>
-                    </div>
+                    <section data-channel="green">
+                        <header>
+                            <h3>Green Channel</h3>
+                        </header>
+                        <button type="button">📁 Choose Image</button>
+                        <input type="file" accept="image/*" aria-label="Upload green channel image">
+                        <label>
+                            <input type="checkbox" aria-describedby="green-invert-help">
+                            Invert colors
+                        </label>
+                        <small id="green-invert-help">Useful for converting roughness to smoothness maps</small>
+                        <figure role="img" aria-label="Green channel preview"></figure>
+                        <small>Upload a grayscale image for the green channel</small>
+                    </section>
 
-                    <div class="channel-upload" id="blue-upload" data-channel="blue">
-                        <div class="channel-label blue-channel">Blue Channel</div>
-                        <button class="upload-btn" type="button" aria-describedby="blue-help">
-                            📁 Choose Image
-                        </button>
-                        <input type="file" id="blue-input" class="file-input" accept="image/*" aria-label="Upload blue channel image">
-                        <div class="preview-container" id="blue-preview" role="img" aria-label="Blue channel preview"></div>
-                        <p id="blue-help" class="help-text">Upload a grayscale image for the blue channel</p>
-                    </div>
+                    <section data-channel="blue">
+                        <header>
+                            <h3>Blue Channel</h3>
+                        </header>
+                        <button type="button">📁 Choose Image</button>
+                        <input type="file" accept="image/*" aria-label="Upload blue channel image">
+                        <label>
+                            <input type="checkbox" aria-describedby="blue-invert-help">
+                            Invert colors
+                        </label>
+                        <small id="blue-invert-help">Useful for converting roughness to smoothness maps</small>
+                        <figure role="img" aria-label="Blue channel preview"></figure>
+                        <small>Upload a grayscale image for the blue channel</small>
+                    </section>
 
-                    <div class="channel-upload" id="alpha-upload" data-channel="alpha">
-                        <div class="channel-label alpha-channel">Alpha Channel</div>
-                        <button class="upload-btn" type="button" aria-describedby="alpha-help">
-                            📁 Choose Image
-                        </button>
-                        <input type="file" id="alpha-input" class="file-input" accept="image/*" aria-label="Upload alpha channel image">
-                        <div class="preview-container" id="alpha-preview" role="img" aria-label="Alpha channel preview"></div>
-                        <p id="alpha-help" class="help-text">Upload a grayscale image for the alpha channel (optional)</p>
-                    </div>
-                </div>
+                    <section data-channel="alpha">
+                        <header>
+                            <h3>Alpha Channel</h3>
+                        </header>
+                        <button type="button">📁 Choose Image</button>
+                        <input type="file" accept="image/*" aria-label="Upload alpha channel image">
+                        <label>
+                            <input type="checkbox" aria-describedby="alpha-invert-help">
+                            Invert colors
+                        </label>
+                        <small id="alpha-invert-help">Useful for converting roughness to smoothness maps</small>
+                        <figure role="img" aria-label="Alpha channel preview"></figure>
+                        <small>Upload a grayscale image for the alpha channel (optional)</small>
+                    </section>
+                </fieldset>
 
-                <div class="missing-channels-config">
-                    <h3>Missing Channel Settings:</h3>
-                    <div class="config-grid">
-                        <label for="missing-rgb-fill">Missing RGB channels:</label>
-                        <select id="missing-rgb-fill" aria-describedby="rgb-help">
+                <fieldset>
+                    <legend>Missing Channel Settings</legend>
+                    
+                    <label>
+                        Missing RGB channels:
+                        <select aria-describedby="rgb-help">
                             <option value="black">Fill with Black (0)</option>
                             <option value="white">Fill with White (255)</option>
                         </select>
-                        <small id="rgb-help">How to fill missing Red, Green, or Blue channels</small>
+                    </label>
+                    <small id="rgb-help">How to fill missing Red, Green, or Blue channels</small>
 
-                        <label for="missing-alpha-fill">Missing Alpha channel:</label>
-                        <select id="missing-alpha-fill" aria-describedby="alpha-fill-help">
+                    <label>
+                        Missing Alpha channel:
+                        <select aria-describedby="alpha-fill-help">
                             <option value="white">Fill with White (Opaque)</option>
                             <option value="black">Fill with Black (Transparent)</option>
                         </select>
-                        <small id="alpha-fill-help">How to fill missing Alpha channel</small>
-                    </div>
-                </div>
-            </section>
+                    </label>
+                    <small id="alpha-fill-help">How to fill missing Alpha channel</small>
+                </fieldset>
 
-            <section class="controls" aria-labelledby="controls-heading">
-                <h2 id="controls-heading" class="sr-only">Processing Controls</h2>
-                
-                <button class="pack-btn" id="pack-btn" type="button" disabled aria-describedby="pack-help">
-                    🎯 Pack Channels
-                </button>
-                <p id="pack-help" class="help-text">Requires at least 2 images</p>
-                
-                <button class="download-btn" id="download-btn" type="button" style="display: none;">
-                    💾 Download Result
-                </button>
-            </section>
+                <section>
+                    <button type="button" disabled aria-describedby="pack-help">
+                        🎯 Pack Channels
+                    </button>
+                    <small id="pack-help">Requires at least 2 images</small>
+                    
+                    <button type="button" hidden>
+                        💾 Download Result
+                    </button>
+                </section>
 
-            <div class="loading" id="loading" role="status" aria-live="polite">
-                <div class="spinner" aria-hidden="true"></div>
-                <p>Processing channels...</p>
-            </div>
+                <aside role="status" aria-live="polite" hidden>
+                    <span aria-hidden="true"></span>
+                    <p>Processing channels...</p>
+                </aside>
+            </form>
 
-            <section class="result" id="result" aria-live="polite"></section>
+            <output aria-live="polite"></output>
         </main>
-    </div>
-
-    <script src="script.js"></script>
+    </article>
 </body>
 </html>
