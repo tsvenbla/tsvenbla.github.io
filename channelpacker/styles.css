@@ -306,6 +306,7 @@ fieldset[data-config] select {
     border: 2px solid var(--border-gray);
     border-radius: var(--spacing-xs);
     background: var(--white);
+    color: var(--dark-gray);
     font-size: var(--font-size-base);
     transition: border-color var(--transition-fast);
 }
