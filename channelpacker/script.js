@@ -1,6 +1,6 @@
 /**
  * RGBA Channel Packer
- * Semantic HTML implementation with color inversion support
+ * Simplified semantic implementation with color inversion support
  */
 
 class ChannelPacker {
@@ -21,14 +21,14 @@ class ChannelPacker {
     }
 
     /**
-     * Bind all event listeners using semantic selectors
+     * Bind all event listeners using simplified selectors
      */
     bindEvents() {
-        // File input listeners for each channel section
+        // File input listeners for each channel fieldset
         this.channels.forEach(channel => {
-            const section = this.getChannelSection(channel);
-            const input = section.querySelector('input[type="file"]');
-            const uploadBtn = section.querySelector('button');
+            const fieldset = this.getChannelFieldset(channel);
+            const input = fieldset.querySelector('input[type="file"]');
+            const uploadBtn = fieldset.querySelector('button');
             
             // File input change
             input.addEventListener('change', (event) => {
@@ -41,7 +41,7 @@ class ChannelPacker {
             });
 
             // Invert checkbox change
-            const invertCheckbox = section.querySelector('input[type="checkbox"]');
+            const invertCheckbox = fieldset.querySelector('input[type="checkbox"]');
             invertCheckbox.addEventListener('change', () => {
                 if (this.loadedImages.has(channel)) {
                     // Re-process the image with current invert setting
@@ -50,23 +50,23 @@ class ChannelPacker {
             });
 
             // Drag and drop support
-            this.addDragDropSupport(section, input);
+            this.addDragDropSupport(fieldset, input);
         });
 
-        // Pack button (first button in controls section)
-        const packBtn = this.getPackButton();
+        // Pack button
+        const packBtn = document.getElementById('pack-btn');
         packBtn.addEventListener('click', () => {
             this.packChannels();
         });
 
-        // Download button (second button in controls section)
-        const downloadBtn = this.getDownloadButton();
+        // Download button
+        const downloadBtn = document.getElementById('download-btn');
         downloadBtn.addEventListener('click', () => {
             this.downloadResult();
         });
 
         // Configuration changes
-        const configSelects = document.querySelectorAll('fieldset:nth-of-type(2) select');
+        const configSelects = document.querySelectorAll('fieldset[data-config] select');
         configSelects.forEach(select => {
             select.addEventListener('change', () => {
                 this.updatePackButton();
@@ -75,24 +75,10 @@ class ChannelPacker {
     }
 
     /**
-     * Get channel section by data attribute
+     * Get channel fieldset by data attribute
      */
-    getChannelSection(channel) {
-        return document.querySelector(`section[data-channel="${channel}"]`);
-    }
-
-    /**
-     * Get pack button
-     */
-    getPackButton() {
-        return document.querySelector('main > section button:first-of-type');
-    }
-
-    /**
-     * Get download button
-     */
-    getDownloadButton() {
-        return document.querySelector('main > section button:last-of-type');
+    getChannelFieldset(channel) {
+        return document.querySelector(`fieldset[data-channel="${channel}"]`);
     }
 
     /**
@@ -110,26 +96,26 @@ class ChannelPacker {
     }
 
     /**
-     * Add drag and drop support to sections
+     * Add drag and drop support to fieldsets
      */
-    addDragDropSupport(section, input) {
+    addDragDropSupport(fieldset, input) {
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            section.addEventListener(eventName, this.preventDefaults, false);
+            fieldset.addEventListener(eventName, this.preventDefaults, false);
         });
 
         ['dragenter', 'dragover'].forEach(eventName => {
-            section.addEventListener(eventName, () => {
-                section.setAttribute('data-drag-over', 'true');
+            fieldset.addEventListener(eventName, () => {
+                fieldset.setAttribute('data-drag-over', 'true');
             }, false);
         });
 
         ['dragleave', 'drop'].forEach(eventName => {
-            section.addEventListener(eventName, () => {
-                section.removeAttribute('data-drag-over');
+            fieldset.addEventListener(eventName, () => {
+                fieldset.removeAttribute('data-drag-over');
             }, false);
         });
 
-        section.addEventListener('drop', (e) => {
+        fieldset.addEventListener('drop', (e) => {
             const files = Array.from(e.dataTransfer.files);
             const imageFile = files.find(file => file.type.startsWith('image/'));
             
@@ -217,9 +203,9 @@ class ChannelPacker {
      * Update preview with inversion if needed
      */
     updatePreview(channel) {
-        const section = this.getChannelSection(channel);
-        const figure = section.querySelector('figure');
-        const invertCheckbox = section.querySelector('input[type="checkbox"]');
+        const fieldset = this.getChannelFieldset(channel);
+        const figure = fieldset.querySelector('figure');
+        const invertCheckbox = fieldset.querySelector('input[type="checkbox"]');
         const imageData = this.loadedImages.get(channel);
         
         if (!imageData) return;
@@ -269,12 +255,11 @@ class ChannelPacker {
     }
 
     /**
-     * Mark channel section as having an image
+     * Mark channel fieldset as having an image
      */
     markChannelAsLoaded(channel) {
-        const section = this.getChannelSection(channel);
-        section.style.borderColor = 'var(--success-green)';
-        section.style.borderStyle = 'solid';
+        const fieldset = this.getChannelFieldset(channel);
+        fieldset.classList.add('has-image');
     }
 
     /**
@@ -283,12 +268,11 @@ class ChannelPacker {
     removeImage(channel) {
         this.loadedImages.delete(channel);
         
-        const section = this.getChannelSection(channel);
-        const figure = section.querySelector('figure');
-        const invertCheckbox = section.querySelector('input[type="checkbox"]');
+        const fieldset = this.getChannelFieldset(channel);
+        const figure = fieldset.querySelector('figure');
+        const invertCheckbox = fieldset.querySelector('input[type="checkbox"]');
         
-        section.style.borderColor = '';
-        section.style.borderStyle = '';
+        fieldset.classList.remove('has-image');
         figure.innerHTML = '';
         invertCheckbox.checked = false;
         
@@ -316,8 +300,8 @@ class ChannelPacker {
      * Update pack button state
      */
     updatePackButton() {
-        const packBtn = this.getPackButton();
-        const helpText = document.querySelector('#pack-help');
+        const packBtn = document.getElementById('pack-btn');
+        const helpText = document.getElementById('pack-help');
         const loadedCount = this.loadedImages.size;
         
         if (loadedCount >= 2) {
@@ -342,7 +326,7 @@ class ChannelPacker {
 
         const loadingElement = this.getLoadingElement();
         const resultElement = this.getResultElement();
-        const downloadBtn = this.getDownloadButton();
+        const downloadBtn = document.getElementById('download-btn');
 
         try {
             // Show loading state
@@ -375,7 +359,7 @@ class ChannelPacker {
         const { width, height } = this.calculateTargetDimensions();
         
         // Get fill values from configuration
-        const configSelects = document.querySelectorAll('fieldset:nth-of-type(2) select');
+        const configSelects = document.querySelectorAll('fieldset[data-config] select');
         const rgbFill = configSelects[0].value === 'white' ? 255 : 0;
         const alphaFill = configSelects[1].value === 'white' ? 255 : 0;
         
@@ -431,8 +415,8 @@ class ChannelPacker {
         for (const channel of this.channels) {
             if (this.loadedImages.has(channel)) {
                 // Check if inversion is enabled for this channel
-                const section = this.getChannelSection(channel);
-                const invertCheckbox = section.querySelector('input[type="checkbox"]');
+                const fieldset = this.getChannelFieldset(channel);
+                const invertCheckbox = fieldset.querySelector('input[type="checkbox"]');
                 const shouldInvert = invertCheckbox.checked;
                 
                 // Use actual image data with potential inversion
@@ -509,8 +493,8 @@ class ChannelPacker {
         const missingChannels = this.channels.filter(ch => !this.loadedImages.has(ch));
         const invertedChannels = this.channels.filter(ch => {
             if (!this.loadedImages.has(ch)) return false;
-            const section = this.getChannelSection(ch);
-            return section.querySelector('input[type="checkbox"]').checked;
+            const fieldset = this.getChannelFieldset(ch);
+            return fieldset.querySelector('input[type="checkbox"]').checked;
         });
         
         const info = document.createElement('p');
