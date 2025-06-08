@@ -1,582 +1,37 @@
-/**
- * RGBA Channel Packer
- * Simplified semantic implementation with color inversion support
- */
-
-class ChannelPacker {
-    constructor() {
-        this.channels = ['red', 'green', 'blue', 'alpha'];
-        this.loadedImages = new Map();
-        this.resultCanvas = null;
-        
-        this.init();
-    }
-
-    /**
-     * Initialize the application
-     */
-    init() {
-        this.bindEvents();
-        this.updatePackButton();
-    }
-
-    /**
-     * Bind all event listeners using simplified selectors
-     */
-    bindEvents() {
-        // File input listeners for each channel fieldset
-        this.channels.forEach(channel => {
-            const fieldset = this.getChannelFieldset(channel);
-            const input = fieldset.querySelector('input[type="file"]');
-            const uploadBtn = fieldset.querySelector('button');
-            
-            // File input change
-            input.addEventListener('change', (event) => {
-                this.handleImageUpload(event, channel);
-            });
-            
-            // Upload button click
-            uploadBtn.addEventListener('click', () => {
-                input.click();
-            });
-
-            // Invert checkbox change
-            const invertCheckbox = fieldset.querySelector('input[type="checkbox"]');
-            invertCheckbox.addEventListener('change', () => {
-                if (this.loadedImages.has(channel)) {
-                    // Re-process the image with current invert setting
-                    this.updatePreview(channel);
-                }
-            });
-
-            // Drag and drop support
-            this.addDragDropSupport(fieldset, input);
-        });
-
-        // Pack button
-        const packBtn = document.getElementById('pack-btn');
-        packBtn.addEventListener('click', () => {
-            this.packChannels();
-        });
-
-        // Download button
-        const downloadBtn = document.getElementById('download-btn');
-        downloadBtn.addEventListener('click', () => {
-            this.downloadResult();
-        });
-
-        // Configuration changes
-        const configSelects = document.querySelectorAll('fieldset[data-config] select');
-        configSelects.forEach(select => {
-            select.addEventListener('change', () => {
-                this.updatePackButton();
-            });
-        });
-    }
-
-    /**
-     * Get channel fieldset by data attribute
-     */
-    getChannelFieldset(channel) {
-        return document.querySelector(`fieldset[data-channel="${channel}"]`);
-    }
-
-    /**
-     * Get loading element
-     */
-    getLoadingElement() {
-        return document.querySelector('aside[role="status"]');
-    }
-
-    /**
-     * Get result output element
-     */
-    getResultElement() {
-        return document.querySelector('output');
-    }
-
-    /**
-     * Add drag and drop support to fieldsets
-     */
-    addDragDropSupport(fieldset, input) {
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            fieldset.addEventListener(eventName, this.preventDefaults, false);
-        });
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            fieldset.addEventListener(eventName, () => {
-                fieldset.setAttribute('data-drag-over', 'true');
-            }, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            fieldset.addEventListener(eventName, () => {
-                fieldset.removeAttribute('data-drag-over');
-            }, false);
-        });
-
-        fieldset.addEventListener('drop', (e) => {
-            const files = Array.from(e.dataTransfer.files);
-            const imageFile = files.find(file => file.type.startsWith('image/'));
-            
-            if (imageFile) {
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(imageFile);
-                input.files = dataTransfer.files;
+class ChannelPackerError extends Error{constructor(e,t,a={}){super(e),this.name="ChannelPackerError",this.code=t,this.details=a,this.timestamp=new Date().toISOString()}}class ImageLoadError extends ChannelPackerError{constructor(e,t){super(e,"IMAGE_LOAD_ERROR",t),this.name="ImageLoadError"}}class ValidationError extends ChannelPackerError{constructor(e,t){super(e,"VALIDATION_ERROR",t),this.name="ValidationError"}}class ProcessingError extends ChannelPackerError{constructor(e,t){super(e,"PROCESSING_ERROR",t),this.name="ProcessingError"}}class ChannelPacker{#a=["red","green","blue","alpha"];#b=new Map;#c=null;#d=null;#e=[];#f=52428800;#g=new Set(["image/jpeg","image/jpg","image/png","image/webp","image/gif","image/bmp"]);static{this.VERSION="2.0.0",this.DEFAULT_QUALITY=.95,this.ANIMATION_DURATION=300}constructor(){this.init()}async init(){try{this.#h(),await this.#i(),this.#j(),this.#k(),console.info(`ChannelPacker v${ChannelPacker.VERSION} initialized successfully`)}catch(e){console.error("Failed to initialize ChannelPacker:",e),this.#l("Failed to initialize the application. Please refresh the page.",e)}}#h(){let requiredFeatures={"Canvas API":()=>!!document.createElement("canvas").getContext,"File API":()=>!!window.File&&!!window.FileReader&&!!window.FileList,"Drag and Drop":()=>"draggable"in document.createElement("div"),"Async/Await"(){try{return eval("(async () => {})"),!0}catch{return!1}},"ES2024 Features"(){try{return"function"==typeof Promise.withResolvers}catch{return!1}}},unsupported=Object.entries(requiredFeatures).filter(([,e])=>!e()).map(([e])=>e);if(unsupported.length>0)throw new ValidationError("Your browser does not support required features",{unsupportedFeatures:unsupported})}async #i(){let{promise:e,resolve:t,reject:a}=Promise.withResolvers();try{for(let r of this.#a)await this.#m(r);this.#n(),this.#o(),window.addEventListener("error",this.#p.bind(this)),window.addEventListener("unhandledrejection",this.#q.bind(this)),t()}catch(i){a(i)}return e}async #m(e){let t=this.#r(e);if(!t)throw new ValidationError(`Channel fieldset not found: ${e}`);let a=t.querySelector('input[type="file"]'),r=t.querySelector("button"),i=t.querySelector('input[type="checkbox"]');if(!a||!r||!i)throw new ValidationError(`Missing required elements for channel: ${e}`);let n;a.addEventListener("change",t=>{clearTimeout(n),n=setTimeout(()=>{this.#s(t,e).catch(t=>{console.error(`Failed to handle image upload for ${e}:`,t),this.#l(`Failed to load image for ${e} channel`,t)})},100)}),r.addEventListener("click",()=>{r.disabled=!0,a.click(),setTimeout(()=>{r.disabled=!1},500)}),i.addEventListener("change",()=>{this.#b.has(e)&&this.#t(e).catch(t=>{console.error(`Failed to update preview for ${e}:`,t),i.checked=!i.checked,this.#l("Failed to apply inversion",t)})}),this.#u(t,a)}#n(){let e=document.getElementById("pack-btn"),t=document.getElementById("download-btn");e?.addEventListener("click",async()=>{try{e.disabled=!0,await this.#v()}catch(t){console.error("Pack operation failed:",t),this.#l("Failed to pack channels",t)}finally{e.disabled=!1}}),t?.addEventListener("click",()=>{this.#w().catch(e=>{console.error("Download failed:",e),this.#l("Failed to download result",e)})})}#o(){document.querySelectorAll("fieldset[data-config] select");let e=document.querySelector("fieldset[data-config]");e?.addEventListener("change",e=>{e.target.matches("select")&&(this.#j(),this.#x())}),this.#y()}#u(e,t){let a=["dragenter","dragover","dragleave","drop"];a.forEach(t=>{e.addEventListener(t,this.#z,!1)});let r=0;e.addEventListener("dragenter",()=>{r++,e.setAttribute("data-drag-over","true"),e.style.transform="scale(1.02)"}),e.addEventListener("dragleave",()=>{0==--r&&(e.removeAttribute("data-drag-over"),e.style.transform="")}),e.addEventListener("drop",async a=>{r=0,e.removeAttribute("data-drag-over"),e.style.transform="";try{let i=Array.from(a.dataTransfer.files),n=i.find(e=>this.#g.has(e.type));if(!n){let o=i.map(e=>e.type).filter(Boolean);throw new ValidationError("Please drop a valid image file",{droppedTypes:o,supportedTypes:[...this.#g]})}let s=new DataTransfer;s.items.add(n),t.files=s.files,t.dispatchEvent(new Event("change",{bubbles:!0}))}catch(l){console.error("Drop handling failed:",l),this.#l("Failed to process dropped file",l)}})}async #s(e,t){let a=e.target.files?.[0];if(!a){this.#A(t);return}this.#d=new AbortController;try{await this.#B(a);let r=this.#r(t);r.classList.add("loading");let i=await this.#C(a,t);this.#b.set(t,{image:i,file:a,metadata:{originalSize:a.size,type:a.type,lastModified:a.lastModified,dimensions:{width:i.width,height:i.height}}}),await this.#t(t),this.#D(t),this.#j(),this.#E(),console.info(`Successfully loaded image for ${t} channel:`,{name:a.name,size:this.#F(a.size),dimensions:`${i.width}\xd7${i.height}`})}catch(n){if("AbortError"===n.name){console.info(`Upload cancelled for ${t} channel`);return}console.error(`Error loading image for ${t} channel:`,n),this.#l(`Failed to load image for ${t} channel`,n),this.#A(t)}finally{let o=this.#r(t);o.classList.remove("loading"),this.#d=null}}async #B(e){if(!e)throw new ValidationError("No file provided");if(!this.#g.has(e.type))throw new ValidationError(`Unsupported file type: ${e.type||"unknown"}`,{providedType:e.type,supportedTypes:[...this.#g]});if(e.size>this.#f)throw new ValidationError(`File too large: ${this.#F(e.size)}`,{maxSize:this.#F(this.#f),actualSize:this.#F(e.size)});try{let t=await e.slice(0,12).arrayBuffer(),a=new Uint8Array(t),r={jpeg:[255,216,255],png:[137,80,78,71],gif:[71,73,70],webp:[82,73,70,70],bmp:[66,77]},i=Object.values(r).some(e=>e.every((e,t)=>a[t]===e));if(!i&&"image/svg+xml"!==e.type)throw new ValidationError("File appears to be corrupted or is not a valid image",{fileSignature:Array.from(a.slice(0,4))})}catch(n){if(n instanceof ValidationError)throw n;console.warn("Could not validate file signature:",n)}}async #C(e,t){return new Promise((a,r)=>{let i=new FileReader,n=new Image;this.#d?.signal.addEventListener("abort",()=>{i.abort(),r(new DOMException("Image loading was cancelled","AbortError"))}),i.onprogress=e=>{if(e.lengthComputable){let a=e.loaded/e.total*100;this.#G(t,a)}},i.onload=e=>{n.onload=()=>{if(0===n.width||0===n.height){r(new ImageLoadError("Invalid image dimensions"));return}let e=8192;if(n.width>e||n.height>e){r(new ImageLoadError(`Image dimensions too large: ${n.width}\xd7${n.height}`,{maxDimension:e,actual:{width:n.width,height:n.height}}));return}a(n)},n.onerror=()=>{r(new ImageLoadError("Failed to decode image"))},n.crossOrigin="anonymous",n.src=e.target.result},i.onerror=()=>{r(new ImageLoadError("Failed to read file"))},i.readAsDataURL(e)})}#G(e,t){let a=this.#r(e),r=a.querySelector(".progress-bar")??this.#H(a);r.style.width=`${t}%`,r.setAttribute("aria-valuenow",t),t>=100&&setTimeout(()=>r.remove(),500)}#H(e){let t=document.createElement("div");return t.className="progress-bar",t.setAttribute("role","progressbar"),t.setAttribute("aria-valuemin","0"),t.setAttribute("aria-valuemax","100"),t.style.cssText=`
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: var(--accent-gradient);
+            transition: width 0.3s ease;
+            z-index: 10;
+        `,e.appendChild(t),t}async #t(e){let t=this.#r(e),a=t.querySelector("figure"),r=t.querySelector('input[type="checkbox"]'),i=this.#b.get(e);if(i)try{let{image:n,file:o,metadata:s}=i,l="undefined"!=typeof OffscreenCanvas?new OffscreenCanvas(n.width,n.height):document.createElement("canvas");l instanceof OffscreenCanvas||(l.width=n.width,l.height=n.height);let d=l.getContext("2d");d.drawImage(n,0,0),r.checked&&await this.#I(d,l.width,l.height);let c=l instanceof OffscreenCanvas?URL.createObjectURL(await l.convertToBlob({type:"image/jpeg",quality:.8})):l.toDataURL("image/jpeg",.8),h=document.createElement("img");h.src=c,h.alt=`${e} channel preview - ${o.name}${r.checked?" (inverted)":""}`,h.loading="lazy",h.decoding="async";let g=document.createElement("figcaption"),p=this.#F(o.size);g.innerHTML=`
+                <strong>${this.#J(o.name)}</strong><br>
+                ${n.width} \xd7 ${n.height}px • ${p}
+                ${r.checked?"<br><em>Colors inverted</em>":""}
+            `,a.style.opacity="0",requestAnimationFrame(()=>{a.innerHTML="",a.appendChild(h),a.appendChild(g),a.style.opacity="1",l instanceof OffscreenCanvas&&(h.onload=()=>URL.revokeObjectURL(c))})}catch(m){throw console.error(`Failed to update preview for ${e}:`,m),new ProcessingError(`Preview generation failed for ${e}`,{channel:e,error:m})}}async #I(e,t,a){let r=e.getImageData(0,0,t,a),i=r.data,n=new Uint32Array(i.buffer),o=1e3;for(let s=0;s<n.length;s+=o){let l=Math.min(s+o,n.length);for(let d=s;d<l;d++){let c=n[d];n[d]=4278190080&c|255-(c>>16&255)<<16|255-(c>>8&255)<<8|255-(255&c)}s%(10*o)==0&&await new Promise(e=>setTimeout(e,0))}e.putImageData(r,0,0)}async #v(){if(this.#b.size<2)throw new ValidationError("At least 2 images are required for packing",{currentCount:this.#b.size,requiredCount:2});let e=this.#K(),t=this.#L(),a=document.getElementById("download-btn");try{e.hidden=!1,t.innerHTML="",a.hidden=!0;let r={current:0,total:100},i=(e,t)=>{r.current=e,this.#M(r,t)};i(10,"Preparing channels..."),await new Promise(e=>requestAnimationFrame(e)),i(20,"Calculating dimensions...");let n=await this.#N(i);i(90,"Finalizing result..."),this.#O(n),a.hidden=!1,i(100,"Complete!"),console.info("Successfully packed channels:",{channels:[...this.#b.keys()],dimensions:`${n.width}\xd7${n.height}`,timestamp:new Date().toISOString()})}catch(o){throw console.error("Error packing channels:",o),new ProcessingError("Failed to pack channels",{loadedChannels:[...this.#b.keys()],error:o})}finally{e.hidden=!0}}async #N(e){let{width:t,height:a}=this.#P();e(30,"Loading configuration...");let[r,i]=document.querySelectorAll("fieldset[data-config] select"),n=r?.value==="white"?255:0,o=i?.value==="white"?255:0;e(40,"Processing channel data...");let s=await this.#Q(t,a,n,o,e);e(70,"Combining channels...");let l="undefined"!=typeof OffscreenCanvas?OffscreenCanvas:HTMLCanvasElement,d=new l(t,a),c=d.getContext("2d"),h=c.createImageData(t,a),g=h.data,p=t*a,m=Math.floor(p/10);for(let u=0;u<g.length;u+=4){let f=u/4,$=4*f;if(g[u]=s.red[$],g[u+1]=s.green[$],g[u+2]=s.blue[$],g[u+3]=s.alpha[$],f%m==0){let w=70+f/p*20;e(w,"Packing pixels..."),f%(5*m)==0&&await new Promise(e=>requestAnimationFrame(e))}}if(c.putImageData(h,0,0),d instanceof OffscreenCanvas){let y=document.createElement("canvas");y.width=t,y.height=a;let E=y.getContext("2d"),v=await d.convertToBlob(),b=await createImageBitmap(v);return E.drawImage(b,0,0),this.#c=y,y}return this.#c=d,d}#P(){let e=Array.from(this.#b.values()).map(e=>e.image);if(0===e.length)throw new ProcessingError("No images loaded");let t=e.map(e=>e.width),a=e.map(e=>e.height),r=Math.max(...t),i=Math.max(...a),n=8192;if(r>n||i>n)throw new ProcessingError(`Result dimensions exceed maximum: ${r}\xd7${i}`,{maxDimension:n,actual:{width:r,height:i}});return{width:r,height:i}}async #Q(e,t,a,r,i){let n={},o={current:0,total:this.#a.length};for(let s of this.#a){let l=40+o.current/o.total*25;if(i(l,`Processing ${s} channel...`),this.#b.has(s)){let d=this.#r(s),c=d?.querySelector('input[type="checkbox"]'),h=c?.checked??!1,g=await this.#R(this.#b.get(s).image,e,t,h),p=g.getContext("2d"),m=p.getImageData(0,0,e,t);n[s]=m.data}else{let u="alpha"===s?r:a;n[s]=this.#S(e,t,u)}o.current++}return n}#S(e,t,a){let r=e*t*4,i=new Uint8ClampedArray(r);if(255===a)i.fill(255);else for(let n=0;n<r;n+=4)i[n]=a,i[n+1]=a,i[n+2]=a,i[n+3]=255;return i}async #R(e,t,a,r=!1){let i="undefined"!=typeof OffscreenCanvas?OffscreenCanvas:HTMLCanvasElement,n=new i(t,a),o=n.getContext("2d",{alpha:!0,desynchronized:!0,willReadFrequently:r});o.imageSmoothingEnabled=!0,o.imageSmoothingQuality="high";let s=Math.min(t/e.width,a/e.height),l=e.width*s,d=e.height*s,c=(t-l)/2,h=(a-d)/2;if(o.clearRect(0,0,t,a),o.drawImage(e,c,h,l,d),r&&await this.#I(o,t,a),n instanceof OffscreenCanvas){let g=document.createElement("canvas");g.width=t,g.height=a;let p=g.getContext("2d"),m=await n.convertToBlob(),u=await createImageBitmap(m);return p.drawImage(u,0,0),g}return n}#O(e){let t=this.#L(),a=document.createElement("div");a.className="result-container";let r=document.createElement("h3");r.textContent="✅ Packed Result";let i={loaded:[],filled:[],inverted:[]};for(let n of this.#a)if(this.#b.has(n)){i.loaded.push(n);let o=this.#r(n),s=o?.querySelector('input[type="checkbox"]');s?.checked&&i.inverted.push(n)}else i.filled.push(n);let l=e.width*e.height*4/1024/1024,d=document.createElement("div");d.className="result-info",d.innerHTML=`
+            <dl>
+                <dt>Dimensions:</dt>
+                <dd>${e.width} \xd7 ${e.height}px</dd>
                 
-                const event = new Event('change', { bubbles: true });
-                input.dispatchEvent(event);
-            }
-        }, false);
-    }
-
-    /**
-     * Prevent default drag behaviors
-     */
-    preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    /**
-     * Handle image upload
-     */
-    async handleImageUpload(event, channel) {
-        const file = event.target.files[0];
-        if (!file) {
-            this.removeImage(channel);
-            return;
-        }
-
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            this.showError('Please select a valid image file.');
-            return;
-        }
-
-        // Validate file size (max 50MB)
-        const maxSize = 50 * 1024 * 1024;
-        if (file.size > maxSize) {
-            this.showError('Image file is too large. Please select a file smaller than 50MB.');
-            return;
-        }
-
-        try {
-            const image = await this.loadImage(file);
-            this.loadedImages.set(channel, { image, file });
-            this.updatePreview(channel);
-            this.markChannelAsLoaded(channel);
-            this.updatePackButton();
-            
-            // Check dimensions consistency
-            this.checkDimensionsConsistency();
-            
-        } catch (error) {
-            console.error(`Error loading image for ${channel} channel:`, error);
-            this.showError(`Failed to load image for ${channel} channel. Please try again.`);
-            this.removeImage(channel);
-        }
-    }
-
-    /**
-     * Load image from file
-     */
-    loadImage(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            
-            reader.onload = (e) => {
-                const img = new Image();
+                <dt>Loaded channels:</dt>
+                <dd>${i.loaded.join(", ")||"None"}</dd>
                 
-                img.onload = () => resolve(img);
-                img.onerror = () => reject(new Error('Failed to load image'));
+                ${i.filled.length>0?`
+                    <dt>Filled channels:</dt>
+                    <dd>${i.filled.join(", ")}</dd>
+                `:""}
                 
-                img.src = e.target.result;
-            };
-            
-            reader.onerror = () => reject(new Error('Failed to read file'));
-            reader.readAsDataURL(file);
-        });
-    }
-
-    /**
-     * Update preview with inversion if needed
-     */
-    updatePreview(channel) {
-        const fieldset = this.getChannelFieldset(channel);
-        const figure = fieldset.querySelector('figure');
-        const invertCheckbox = fieldset.querySelector('input[type="checkbox"]');
-        const imageData = this.loadedImages.get(channel);
-        
-        if (!imageData) return;
-
-        const { image, file } = imageData;
-        
-        // Create preview canvas to apply inversion if needed
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        canvas.width = image.width;
-        canvas.height = image.height;
-        ctx.drawImage(image, 0, 0);
-        
-        // Apply inversion if checkbox is checked
-        if (invertCheckbox.checked) {
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-            
-            for (let i = 0; i < data.length; i += 4) {
-                data[i] = 255 - data[i];         // Red
-                data[i + 1] = 255 - data[i + 1]; // Green
-                data[i + 2] = 255 - data[i + 2]; // Blue
-                // Alpha channel (i + 3) remains unchanged
-            }
-            
-            ctx.putImageData(imageData, 0, 0);
-        }
-        
-        // Create preview image
-        const previewImg = document.createElement('img');
-        previewImg.src = canvas.toDataURL();
-        previewImg.alt = `${channel} channel preview - ${file.name}${invertCheckbox.checked ? ' (inverted)' : ''}`;
-        
-        // Create file info
-        const figcaption = document.createElement('figcaption');
-        figcaption.innerHTML = `
-            <strong>${file.name}</strong><br>
-            ${image.width} × ${image.height}px
-            ${invertCheckbox.checked ? '<br><em>(Colors inverted)</em>' : ''}
-        `;
-        
-        // Update figure content
-        figure.innerHTML = '';
-        figure.appendChild(previewImg);
-        figure.appendChild(figcaption);
-    }
-
-    /**
-     * Mark channel fieldset as having an image
-     */
-    markChannelAsLoaded(channel) {
-        const fieldset = this.getChannelFieldset(channel);
-        fieldset.classList.add('has-image');
-    }
-
-    /**
-     * Remove image from channel
-     */
-    removeImage(channel) {
-        this.loadedImages.delete(channel);
-        
-        const fieldset = this.getChannelFieldset(channel);
-        const figure = fieldset.querySelector('figure');
-        const invertCheckbox = fieldset.querySelector('input[type="checkbox"]');
-        
-        fieldset.classList.remove('has-image');
-        figure.innerHTML = '';
-        invertCheckbox.checked = false;
-        
-        this.updatePackButton();
-    }
-
-    /**
-     * Check if all loaded images have consistent dimensions
-     */
-    checkDimensionsConsistency() {
-        const images = Array.from(this.loadedImages.values()).map(data => data.image);
-        if (images.length < 2) return;
-
-        const firstImage = images[0];
-        const dimensionsMatch = images.every(img => 
-            img.width === firstImage.width && img.height === firstImage.height
-        );
-
-        if (!dimensionsMatch) {
-            this.showWarning('Warning: Images have different dimensions. They will be resized to match the largest dimensions during packing.');
-        }
-    }
-
-    /**
-     * Update pack button state
-     */
-    updatePackButton() {
-        const packBtn = document.getElementById('pack-btn');
-        const helpText = document.getElementById('pack-help');
-        const loadedCount = this.loadedImages.size;
-        
-        if (loadedCount >= 2) {
-            packBtn.disabled = false;
-            helpText.textContent = `Ready to pack ${loadedCount} channel${loadedCount > 1 ? 's' : ''}`;
-            helpText.style.color = 'var(--success-green)';
-        } else {
-            packBtn.disabled = true;
-            helpText.textContent = `Requires at least 2 images (${loadedCount}/2)`;
-            helpText.style.color = 'var(--medium-gray)';
-        }
-    }
-
-    /**
-     * Pack channels into RGBA image
-     */
-    async packChannels() {
-        if (this.loadedImages.size < 2) {
-            this.showError('Please upload at least 2 images before packing.');
-            return;
-        }
-
-        const loadingElement = this.getLoadingElement();
-        const resultElement = this.getResultElement();
-        const downloadBtn = document.getElementById('download-btn');
-
-        try {
-            // Show loading state
-            loadingElement.hidden = false;
-            resultElement.innerHTML = '';
-            downloadBtn.hidden = true;
-
-            // Process in next tick to allow UI update
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            const packedCanvas = await this.processChannels();
-            
-            // Show result
-            this.displayResult(packedCanvas);
-            downloadBtn.hidden = false;
-            
-        } catch (error) {
-            console.error('Error packing channels:', error);
-            this.showError('Failed to pack channels. Please try again.');
-        } finally {
-            loadingElement.hidden = true;
-        }
-    }
-
-    /**
-     * Process channels and create packed image with inversion support
-     */
-    async processChannels() {
-        // Calculate target dimensions
-        const { width, height } = this.calculateTargetDimensions();
-        
-        // Get fill values from configuration
-        const configSelects = document.querySelectorAll('fieldset[data-config] select');
-        const rgbFill = configSelects[0].value === 'white' ? 255 : 0;
-        const alphaFill = configSelects[1].value === 'white' ? 255 : 0;
-        
-        // Create canvases for each channel with inversion
-        const channelData = await this.prepareChannelData(width, height, rgbFill, alphaFill);
-        
-        // Create result canvas
-        const resultCanvas = document.createElement('canvas');
-        resultCanvas.width = width;
-        resultCanvas.height = height;
-        
-        const resultCtx = resultCanvas.getContext('2d');
-        const resultImageData = resultCtx.createImageData(width, height);
-        const resultData = resultImageData.data;
-
-        // Pack channels into RGBA
-        for (let i = 0; i < resultData.length; i += 4) {
-            const pixelIndex = i / 4;
-            const sourceIndex = pixelIndex * 4;
-
-            // Use red component of each processed image as the channel value
-            resultData[i] = channelData.red[sourceIndex];         // Red channel
-            resultData[i + 1] = channelData.green[sourceIndex];   // Green channel
-            resultData[i + 2] = channelData.blue[sourceIndex];    // Blue channel
-            resultData[i + 3] = channelData.alpha[sourceIndex];   // Alpha channel
-        }
-
-        // Put the result back to canvas
-        resultCtx.putImageData(resultImageData, 0, 0);
-        this.resultCanvas = resultCanvas;
-        
-        return resultCanvas;
-    }
-
-    /**
-     * Calculate target dimensions for the packed image
-     */
-    calculateTargetDimensions() {
-        const images = Array.from(this.loadedImages.values()).map(data => data.image);
-        
-        const width = Math.max(...images.map(img => img.width));
-        const height = Math.max(...images.map(img => img.height));
-        
-        return { width, height };
-    }
-
-    /**
-     * Prepare channel data with inversion support
-     */
-    async prepareChannelData(width, height, rgbFill, alphaFill) {
-        const channelData = {};
-        
-        for (const channel of this.channels) {
-            if (this.loadedImages.has(channel)) {
-                // Check if inversion is enabled for this channel
-                const fieldset = this.getChannelFieldset(channel);
-                const invertCheckbox = fieldset.querySelector('input[type="checkbox"]');
-                const shouldInvert = invertCheckbox.checked;
+                ${i.inverted.length>0?`
+                    <dt>Inverted channels:</dt>
+                    <dd>${i.inverted.join(", ")}</dd>
+                `:""}
                 
-                // Use actual image data with potential inversion
-                const canvas = this.createChannelCanvas(
-                    this.loadedImages.get(channel).image, 
-                    width, 
-                    height, 
-                    shouldInvert
-                );
-                const ctx = canvas.getContext('2d');
-                const imageData = ctx.getImageData(0, 0, width, height);
-                channelData[channel] = imageData.data;
-            } else {
-                // Create fill data
-                const fillValue = channel === 'alpha' ? alphaFill : rgbFill;
-                channelData[channel] = new Uint8ClampedArray(width * height * 4);
-                
-                // Fill with specified value
-                for (let i = 0; i < channelData[channel].length; i += 4) {
-                    channelData[channel][i] = fillValue;     // Use fill value
-                    channelData[channel][i + 1] = fillValue; // Not used, but kept for consistency
-                    channelData[channel][i + 2] = fillValue; // Not used, but kept for consistency
-                    channelData[channel][i + 3] = 255;       // Alpha for the working image
-                }
-            }
-        }
-        
-        return channelData;
-    }
-
-    /**
-     * Create canvas with channel image data and optional inversion
-     */
-    createChannelCanvas(image, targetWidth, targetHeight, shouldInvert = false) {
-        const canvas = document.createElement('canvas');
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
-        
-        const ctx = canvas.getContext('2d');
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        
-        // Draw image scaled to target dimensions
-        ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
-        
-        // Apply inversion if requested
-        if (shouldInvert) {
-            const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
-            const data = imageData.data;
-            
-            for (let i = 0; i < data.length; i += 4) {
-                data[i] = 255 - data[i];         // Red
-                data[i + 1] = 255 - data[i + 1]; // Green
-                data[i + 2] = 255 - data[i + 2]; // Blue
-                // Alpha channel (i + 3) remains unchanged
-            }
-            
-            ctx.putImageData(imageData, 0, 0);
-        }
-        
-        return canvas;
-    }
-
-    /**
-     * Display the packed result
-     */
-    displayResult(canvas) {
-        const resultElement = this.getResultElement();
-        
-        const title = document.createElement('h3');
-        title.textContent = '✅ Packed Result';
-        
-        const loadedChannels = Array.from(this.loadedImages.keys());
-        const missingChannels = this.channels.filter(ch => !this.loadedImages.has(ch));
-        const invertedChannels = this.channels.filter(ch => {
-            if (!this.loadedImages.has(ch)) return false;
-            const fieldset = this.getChannelFieldset(ch);
-            return fieldset.querySelector('input[type="checkbox"]').checked;
-        });
-        
-        const info = document.createElement('p');
-        info.innerHTML = `
-            <strong>Dimensions:</strong> ${canvas.width} × ${canvas.height}px<br>
-            <strong>Loaded channels:</strong> ${loadedChannels.join(', ')}<br>
-            ${missingChannels.length > 0 ? `<strong>Filled channels:</strong> ${missingChannels.join(', ')}<br>` : ''}
-            ${invertedChannels.length > 0 ? `<strong>Inverted channels:</strong> ${invertedChannels.join(', ')}` : ''}
-        `;
-        info.style.marginBottom = '1rem';
-        info.style.fontSize = '0.9rem';
-        info.style.color = 'var(--medium-gray)';
-        
-        resultElement.innerHTML = '';
-        resultElement.appendChild(title);
-        resultElement.appendChild(info);
-        resultElement.appendChild(canvas);
-    }
-
-    /**
-     * Download the packed result
-     */
-    downloadResult() {
-        if (!this.resultCanvas) {
-            this.showError('No result to download. Please pack channels first.');
-            return;
-        }
-
-        try {
-            this.resultCanvas.toBlob((blob) => {
-                if (!blob) {
-                    this.showError('Failed to create download file.');
-                    return;
-                }
-
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                
-                link.href = url;
-                link.download = `packed_channels_${Date.now()}.png`;
-                link.style.display = 'none';
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                // Clean up
-                setTimeout(() => URL.revokeObjectURL(url), 1000);
-                
-            }, 'image/png', 0.95);
-        } catch (error) {
-            console.error('Download error:', error);
-            this.showError('Failed to download the result.');
-        }
-    }
-
-    /**
-     * Show error message
-     */
-    showError(message) {
-        this.showNotification(message, 'error');
-    }
-
-    /**
-     * Show warning message
-     */
-    showWarning(message) {
-        this.showNotification(message, 'warning');
-    }
-
-    /**
-     * Show notification
-     */
-    showNotification(message, type = 'info') {
-        // Remove existing notifications
-        const existingNotifications = document.querySelectorAll('.notification');
-        existingNotifications.forEach(notification => notification.remove());
-
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.textContent = message;
-        notification.style.cssText = `
+                <dt>Estimated size:</dt>
+                <dd>~${l.toFixed(2)} MB (uncompressed)</dd>
+            </dl>
+        `;let c=document.createElement("div");c.className="canvas-wrapper",c.appendChild(e),a.appendChild(r),a.appendChild(d),a.appendChild(c),t.style.opacity="0",requestAnimationFrame(()=>{t.innerHTML="",t.appendChild(a),t.style.opacity="1"})}async #w(){if(!this.#c)throw new ValidationError("No result available for download");try{let e=await this.#T(),t="image/jpeg"===e?.95:void 0,a=await new Promise((a,r)=>{this.#c.toBlob(e=>e?a(e):r(Error("Failed to create blob")),e,t)}),r=new Date().toISOString().replace(/[:.]/g,"-").slice(0,-5),i=[...this.#b.keys()].join("_"),n=e.split("/")[1],o=`packed_${i}_${r}.${n}`,s=URL.createObjectURL(a),l=document.createElement("a");l.href=s,l.download=o,l.style.display="none",document.body.appendChild(l),l.click(),document.body.removeChild(l),setTimeout(()=>URL.revokeObjectURL(s),1e3),console.info("Downloaded packed result:",{filename:o,format:e,size:this.#F(a.size),timestamp:new Date().toISOString()}),this.#U("Download started successfully!","success")}catch(d){throw console.error("Download error:",d),new ProcessingError("Failed to download result",{error:d})}}async #T(){return"image/png"}#l(e,t){t&&console.error("Error details:",{message:t.message,code:t.code,details:t.details,stack:t.stack});let a=t?.details?.userMessage||e;this.#U(a,"error"),this.#V(t)}#U(e,t="info",a=[]){document.querySelectorAll(".notification").forEach(e=>e.remove());let r=document.createElement("div");r.className=`notification notification-${t}`,r.setAttribute("role","alert"),r.setAttribute("aria-live","polite");let i=document.createElement("p");if(i.textContent=e,r.appendChild(i),a.length>0){let n=document.createElement("div");n.className="notification-actions",a.forEach(({label:e,handler:t})=>{let a=document.createElement("button");a.textContent=e,a.addEventListener("click",t),n.appendChild(a)}),r.appendChild(n)}r.style.cssText=`
             position: fixed;
             top: 20px;
             right: 20px;
@@ -588,39 +43,9 @@ class ChannelPacker {
             max-width: 400px;
             word-wrap: break-word;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            animation: slideIn 0.3s ease;
-        `;
-
-        // Set background color based on type
-        const colors = {
-            error: '#f44336',
-            warning: '#ff9800',
-            info: '#2196f3',
-            success: '#4caf50'
-        };
-        notification.style.backgroundColor = colors[type] || colors.info;
-
-        document.body.appendChild(notification);
-
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }
-        }, 5000);
-
-        // Add click to dismiss
-        notification.addEventListener('click', () => {
-            notification.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => notification.remove(), 300);
-        });
-    }
-}
-
-// Add notification animations
-const style = document.createElement('style');
-style.textContent = `
+            animation: slideIn ${ChannelPacker.ANIMATION_DURATION}ms ease;
+        `;let o={error:"#f44336",warning:"#ff9800",info:"#2196f3",success:"#4caf50"};r.style.backgroundColor=o[t]??o.info,document.body.appendChild(r);let s=setTimeout(()=>{r.parentNode&&(r.style.animation=`slideOut ${ChannelPacker.ANIMATION_DURATION}ms ease`,setTimeout(()=>r.remove(),ChannelPacker.ANIMATION_DURATION))},5e3);r.addEventListener("click",e=>{"BUTTON"!==e.target.tagName&&(clearTimeout(s),r.style.animation=`slideOut ${ChannelPacker.ANIMATION_DURATION}ms ease`,setTimeout(()=>r.remove(),ChannelPacker.ANIMATION_DURATION))})}#M(e,t){let a=this.#K(),r=a?.querySelector("p");r&&(r.textContent=`${t} (${Math.round(e.current)}%)`)}#x(){try{let e={rgbFill:document.querySelector("fieldset[data-config] select")?.value,alphaFill:document.querySelectorAll("fieldset[data-config] select")[1]?.value,version:ChannelPacker.VERSION};localStorage.setItem("channelPackerPrefs",JSON.stringify(e))}catch(t){console.warn("Failed to save preferences:",t)}}#y(){try{let e=localStorage.getItem("channelPackerPrefs");if(!e)return;let t=JSON.parse(e);if(t.version===ChannelPacker.VERSION){let a=document.querySelectorAll("fieldset[data-config] select");a[0]&&t.rgbFill&&(a[0].value=t.rgbFill),a[1]&&t.alphaFill&&(a[1].value=t.alphaFill)}}catch(r){console.warn("Failed to load preferences:",r)}}#k(){if(window.PerformanceObserver)try{let e=new PerformanceObserver(e=>{for(let t of e.getEntries())t.duration>50&&console.warn("Long task detected:",{duration:t.duration,startTime:t.startTime,name:t.name})});e.observe({entryTypes:["longtask"]})}catch(t){console.warn("Performance monitoring setup failed:",t)}}#p(e){console.error("Global error:",e.error),this.#V(e.error)}#q(e){console.error("Unhandled promise rejection:",e.reason),this.#V(e.reason)}#V(e){window.DEBUG&&(console.group("Error Report"),console.error("Error:",e),console.table({Message:e?.message,Code:e?.code,Type:e?.constructor?.name,Timestamp:new Date().toISOString()}),console.groupEnd())}#r(e){return document.querySelector(`fieldset[data-channel="${e}"]`)}#K(){return document.querySelector('aside[role="status"]')}#L(){return document.querySelector("output")}#z(e){e.preventDefault(),e.stopPropagation()}#D(e){let t=this.#r(e);t?.classList.add("has-image")}#A(e){this.#b.delete(e);let t=this.#r(e),a=t?.querySelector("figure"),r=t?.querySelector('input[type="checkbox"]'),i=t?.querySelector('input[type="file"]');t?.classList.remove("has-image"),a&&(a.innerHTML=""),r&&(r.checked=!1),i&&(i.value=""),this.#j()}#E(){let e=Array.from(this.#b.values()).map(e=>e.image);if(e.length<2)return;let t=e[0],a=e.every(e=>e.width===t.width&&e.height===t.height);if(!a){let r={};e.forEach(e=>{let t=`${e.width}\xd7${e.height}`;(r[t]??=[]).push(e)});let i=Object.entries(r).map(([e,t])=>`${e}: ${t.length} image(s)`).join(", ");this.#W(`Images have different dimensions. They will be resized to match the largest dimensions. (${i})`)}}#j(){let e=document.getElementById("pack-btn"),t=document.getElementById("pack-help"),a=this.#b.size;e&&t&&(a>=2?(e.disabled=!1,t.textContent=`Ready to pack ${a} channel${a>1?"s":""}`,t.style.color="var(--success-green)",e.setAttribute("aria-label",`Pack ${a} channels into RGBA image`)):(e.disabled=!0,t.textContent=`Requires at least 2 images (${a}/2)`,t.style.color="var(--medium-gray)",e.setAttribute("aria-label","Pack channels (disabled - requires at least 2 images)")))}#W(e){this.#U(e,"warning")}#F(e){let t=["B","KB","MB","GB"],a=e,r=0;for(;a>=1024&&r<t.length-1;)a/=1024,r++;return`${a.toFixed(2)} ${t[r]}`}#J(e){let t=document.createElement("div");return t.textContent=e,t.innerHTML}}const enhancedStyles=`
+    /* Enhanced animations */
     @keyframes slideIn {
         from {
             transform: translateX(100%);
@@ -643,18 +68,114 @@ style.textContent = `
         }
     }
     
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    /* Enhanced notifications */
     .notification {
         cursor: pointer;
         transition: transform 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
     }
     
     .notification:hover {
         transform: scale(1.02);
     }
-`;
-document.head.appendChild(style);
-
-// Initialize the application when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    new ChannelPacker();
-});
+    
+    .notification p {
+        margin: 0;
+    }
+    
+    .notification-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .notification-actions button {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: background 0.2s ease;
+    }
+    
+    .notification-actions button:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Loading state for fieldsets */
+    fieldset[data-channel].loading {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+    
+    fieldset[data-channel].loading::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulse 1s infinite;
+    }
+    
+    /* Progress bar */
+    .progress-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: var(--accent-gradient);
+        transition: width 0.3s ease;
+        z-index: 10;
+    }
+    
+    /* Result container enhancements */
+    .result-container {
+        animation: slideIn 0.5s ease;
+    }
+    
+    .result-info dl {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.5rem;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+    }
+    
+    .result-info dt {
+        font-weight: 600;
+        color: var(--dark-gray);
+    }
+    
+    .result-info dd {
+        margin: 0;
+        color: var(--medium-gray);
+    }
+    
+    .canvas-wrapper {
+        position: relative;
+        display: inline-block;
+        margin-top: 1rem;
+    }
+    
+    /* Smooth transitions */
+    output {
+        transition: opacity 0.3s ease;
+    }
+    
+    figure {
+        transition: opacity 0.3s ease;
+    }
+`,styleElement=document.createElement("style");styleElement.textContent=enhancedStyles,document.head.appendChild(styleElement),"loading"===document.readyState?document.addEventListener("DOMContentLoaded",()=>{window.channelPacker=new ChannelPacker}):window.channelPacker=new ChannelPacker,"undefined"!=typeof module&&module.exports&&(module.exports={ChannelPacker,ChannelPackerError,ImageLoadError,ValidationError,ProcessingError});
