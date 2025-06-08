@@ -1,6 +1,6 @@
 /**
  * RGBA Channel Packer
- * Modern JavaScript implementation for packing grayscale images into RGBA channels
+ * Semantic HTML implementation with color inversion support
  */
 
 class ChannelPacker {
@@ -21,13 +21,14 @@ class ChannelPacker {
     }
 
     /**
-     * Bind all event listeners
+     * Bind all event listeners using semantic selectors
      */
     bindEvents() {
-        // File input listeners
+        // File input listeners for each channel section
         this.channels.forEach(channel => {
-            const input = document.getElementById(`${channel}-input`);
-            const uploadBtn = input.previousElementSibling;
+            const section = this.getChannelSection(channel);
+            const input = section.querySelector('input[type="file"]');
+            const uploadBtn = section.querySelector('button');
             
             // File input change
             input.addEventListener('change', (event) => {
@@ -39,62 +40,104 @@ class ChannelPacker {
                 input.click();
             });
 
+            // Invert checkbox change
+            const invertCheckbox = section.querySelector('input[type="checkbox"]');
+            invertCheckbox.addEventListener('change', () => {
+                if (this.loadedImages.has(channel)) {
+                    // Re-process the image with current invert setting
+                    this.updatePreview(channel);
+                }
+            });
+
             // Drag and drop support
-            const uploadContainer = document.getElementById(`${channel}-upload`);
-            this.addDragDropSupport(uploadContainer, input);
+            this.addDragDropSupport(section, input);
         });
 
-        // Pack button
-        document.getElementById('pack-btn').addEventListener('click', () => {
+        // Pack button (first button in controls section)
+        const packBtn = this.getPackButton();
+        packBtn.addEventListener('click', () => {
             this.packChannels();
         });
 
-        // Download button
-        document.getElementById('download-btn').addEventListener('click', () => {
+        // Download button (second button in controls section)
+        const downloadBtn = this.getDownloadButton();
+        downloadBtn.addEventListener('click', () => {
             this.downloadResult();
         });
 
         // Configuration changes
-        document.getElementById('missing-rgb-fill').addEventListener('change', () => {
-            this.updatePackButton();
-        });
-
-        document.getElementById('missing-alpha-fill').addEventListener('change', () => {
-            this.updatePackButton();
+        const configSelects = document.querySelectorAll('fieldset:nth-of-type(2) select');
+        configSelects.forEach(select => {
+            select.addEventListener('change', () => {
+                this.updatePackButton();
+            });
         });
     }
 
     /**
-     * Add drag and drop support to upload containers
+     * Get channel section by data attribute
      */
-    addDragDropSupport(container, input) {
+    getChannelSection(channel) {
+        return document.querySelector(`section[data-channel="${channel}"]`);
+    }
+
+    /**
+     * Get pack button
+     */
+    getPackButton() {
+        return document.querySelector('main > section button:first-of-type');
+    }
+
+    /**
+     * Get download button
+     */
+    getDownloadButton() {
+        return document.querySelector('main > section button:last-of-type');
+    }
+
+    /**
+     * Get loading element
+     */
+    getLoadingElement() {
+        return document.querySelector('aside[role="status"]');
+    }
+
+    /**
+     * Get result output element
+     */
+    getResultElement() {
+        return document.querySelector('output');
+    }
+
+    /**
+     * Add drag and drop support to sections
+     */
+    addDragDropSupport(section, input) {
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            container.addEventListener(eventName, this.preventDefaults, false);
+            section.addEventListener(eventName, this.preventDefaults, false);
         });
 
         ['dragenter', 'dragover'].forEach(eventName => {
-            container.addEventListener(eventName, () => {
-                container.classList.add('drag-over');
+            section.addEventListener(eventName, () => {
+                section.setAttribute('data-drag-over', 'true');
             }, false);
         });
 
         ['dragleave', 'drop'].forEach(eventName => {
-            container.addEventListener(eventName, () => {
-                container.classList.remove('drag-over');
+            section.addEventListener(eventName, () => {
+                section.removeAttribute('data-drag-over');
             }, false);
         });
 
-        container.addEventListener('drop', (e) => {
+        section.addEventListener('drop', (e) => {
             const files = Array.from(e.dataTransfer.files);
             const imageFile = files.find(file => file.type.startsWith('image/'));
             
             if (imageFile) {
-                // Simulate file input change
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(imageFile);
                 input.files = dataTransfer.files;
                 
-                // Trigger change event
                 const event = new Event('change', { bubbles: true });
                 input.dispatchEvent(event);
             }
@@ -134,8 +177,8 @@ class ChannelPacker {
 
         try {
             const image = await this.loadImage(file);
-            this.loadedImages.set(channel, image);
-            this.showPreview(channel, image, file);
+            this.loadedImages.set(channel, { image, file });
+            this.updatePreview(channel);
             this.markChannelAsLoaded(channel);
             this.updatePackButton();
             
@@ -171,36 +214,67 @@ class ChannelPacker {
     }
 
     /**
-     * Show image preview
+     * Update preview with inversion if needed
      */
-    showPreview(channel, image, file) {
-        const previewContainer = document.getElementById(`${channel}-preview`);
+    updatePreview(channel) {
+        const section = this.getChannelSection(channel);
+        const figure = section.querySelector('figure');
+        const invertCheckbox = section.querySelector('input[type="checkbox"]');
+        const imageData = this.loadedImages.get(channel);
+        
+        if (!imageData) return;
+
+        const { image, file } = imageData;
+        
+        // Create preview canvas to apply inversion if needed
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = image.width;
+        canvas.height = image.height;
+        ctx.drawImage(image, 0, 0);
+        
+        // Apply inversion if checkbox is checked
+        if (invertCheckbox.checked) {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = 255 - data[i];         // Red
+                data[i + 1] = 255 - data[i + 1]; // Green
+                data[i + 2] = 255 - data[i + 2]; // Blue
+                // Alpha channel (i + 3) remains unchanged
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+        }
+        
+        // Create preview image
         const previewImg = document.createElement('img');
+        previewImg.src = canvas.toDataURL();
+        previewImg.alt = `${channel} channel preview - ${file.name}${invertCheckbox.checked ? ' (inverted)' : ''}`;
         
-        previewImg.src = image.src;
-        previewImg.className = 'preview-img';
-        previewImg.alt = `${channel} channel preview - ${file.name}`;
-        
-        // Clear previous content and add new preview
-        previewContainer.innerHTML = '';
-        previewContainer.appendChild(previewImg);
-        
-        // Add file info
-        const fileInfo = document.createElement('div');
-        fileInfo.className = 'file-info';
-        fileInfo.innerHTML = `
-            <small>${file.name}</small><br>
-            <small>${image.width} × ${image.height}px</small>
+        // Create file info
+        const figcaption = document.createElement('figcaption');
+        figcaption.innerHTML = `
+            <strong>${file.name}</strong><br>
+            ${image.width} × ${image.height}px
+            ${invertCheckbox.checked ? '<br><em>(Colors inverted)</em>' : ''}
         `;
-        previewContainer.appendChild(fileInfo);
+        
+        // Update figure content
+        figure.innerHTML = '';
+        figure.appendChild(previewImg);
+        figure.appendChild(figcaption);
     }
 
     /**
-     * Mark channel container as having an image
+     * Mark channel section as having an image
      */
     markChannelAsLoaded(channel) {
-        const container = document.getElementById(`${channel}-upload`);
-        container.classList.add('has-image');
+        const section = this.getChannelSection(channel);
+        section.style.borderColor = 'var(--success-green)';
+        section.style.borderStyle = 'solid';
     }
 
     /**
@@ -209,11 +283,14 @@ class ChannelPacker {
     removeImage(channel) {
         this.loadedImages.delete(channel);
         
-        const container = document.getElementById(`${channel}-upload`);
-        const preview = document.getElementById(`${channel}-preview`);
+        const section = this.getChannelSection(channel);
+        const figure = section.querySelector('figure');
+        const invertCheckbox = section.querySelector('input[type="checkbox"]');
         
-        container.classList.remove('has-image');
-        preview.innerHTML = '';
+        section.style.borderColor = '';
+        section.style.borderStyle = '';
+        figure.innerHTML = '';
+        invertCheckbox.checked = false;
         
         this.updatePackButton();
     }
@@ -222,7 +299,7 @@ class ChannelPacker {
      * Check if all loaded images have consistent dimensions
      */
     checkDimensionsConsistency() {
-        const images = Array.from(this.loadedImages.values());
+        const images = Array.from(this.loadedImages.values()).map(data => data.image);
         if (images.length < 2) return;
 
         const firstImage = images[0];
@@ -239,18 +316,18 @@ class ChannelPacker {
      * Update pack button state
      */
     updatePackButton() {
-        const packBtn = document.getElementById('pack-btn');
+        const packBtn = this.getPackButton();
+        const helpText = document.querySelector('#pack-help');
         const loadedCount = this.loadedImages.size;
-        const helpText = document.getElementById('pack-help');
         
         if (loadedCount >= 2) {
             packBtn.disabled = false;
             helpText.textContent = `Ready to pack ${loadedCount} channel${loadedCount > 1 ? 's' : ''}`;
-            helpText.style.color = '#4caf50';
+            helpText.style.color = 'var(--success-green)';
         } else {
             packBtn.disabled = true;
             helpText.textContent = `Requires at least 2 images (${loadedCount}/2)`;
-            helpText.style.color = '#666';
+            helpText.style.color = 'var(--medium-gray)';
         }
     }
 
@@ -263,15 +340,15 @@ class ChannelPacker {
             return;
         }
 
-        const loadingElement = document.getElementById('loading');
-        const resultElement = document.getElementById('result');
-        const downloadBtn = document.getElementById('download-btn');
+        const loadingElement = this.getLoadingElement();
+        const resultElement = this.getResultElement();
+        const downloadBtn = this.getDownloadButton();
 
         try {
             // Show loading state
-            loadingElement.classList.add('show');
+            loadingElement.hidden = false;
             resultElement.innerHTML = '';
-            downloadBtn.style.display = 'none';
+            downloadBtn.hidden = true;
 
             // Process in next tick to allow UI update
             await new Promise(resolve => setTimeout(resolve, 100));
@@ -280,35 +357,35 @@ class ChannelPacker {
             
             // Show result
             this.displayResult(packedCanvas);
-            downloadBtn.style.display = 'inline-block';
+            downloadBtn.hidden = false;
             
         } catch (error) {
             console.error('Error packing channels:', error);
             this.showError('Failed to pack channels. Please try again.');
         } finally {
-            loadingElement.classList.remove('show');
+            loadingElement.hidden = true;
         }
     }
 
     /**
-     * Process channels and create packed image
+     * Process channels and create packed image with inversion support
      */
     async processChannels() {
         // Calculate target dimensions
         const { width, height } = this.calculateTargetDimensions();
         
         // Get fill values from configuration
-        const rgbFill = document.getElementById('missing-rgb-fill').value === 'white' ? 255 : 0;
-        const alphaFill = document.getElementById('missing-alpha-fill').value === 'white' ? 255 : 0;
+        const configSelects = document.querySelectorAll('fieldset:nth-of-type(2) select');
+        const rgbFill = configSelects[0].value === 'white' ? 255 : 0;
+        const alphaFill = configSelects[1].value === 'white' ? 255 : 0;
         
-        // Create canvases for each channel
+        // Create canvases for each channel with inversion
         const channelData = await this.prepareChannelData(width, height, rgbFill, alphaFill);
         
         // Create result canvas
         const resultCanvas = document.createElement('canvas');
         resultCanvas.width = width;
         resultCanvas.height = height;
-        resultCanvas.className = 'result-canvas';
         
         const resultCtx = resultCanvas.getContext('2d');
         const resultImageData = resultCtx.createImageData(width, height);
@@ -319,7 +396,7 @@ class ChannelPacker {
             const pixelIndex = i / 4;
             const sourceIndex = pixelIndex * 4;
 
-            // Use red component of each grayscale image as the channel value
+            // Use red component of each processed image as the channel value
             resultData[i] = channelData.red[sourceIndex];         // Red channel
             resultData[i + 1] = channelData.green[sourceIndex];   // Green channel
             resultData[i + 2] = channelData.blue[sourceIndex];    // Blue channel
@@ -337,7 +414,7 @@ class ChannelPacker {
      * Calculate target dimensions for the packed image
      */
     calculateTargetDimensions() {
-        const images = Array.from(this.loadedImages.values());
+        const images = Array.from(this.loadedImages.values()).map(data => data.image);
         
         const width = Math.max(...images.map(img => img.width));
         const height = Math.max(...images.map(img => img.height));
@@ -346,15 +423,25 @@ class ChannelPacker {
     }
 
     /**
-     * Prepare channel data with proper fill values
+     * Prepare channel data with inversion support
      */
     async prepareChannelData(width, height, rgbFill, alphaFill) {
         const channelData = {};
         
         for (const channel of this.channels) {
             if (this.loadedImages.has(channel)) {
-                // Use actual image data
-                const canvas = this.createChannelCanvas(this.loadedImages.get(channel), width, height);
+                // Check if inversion is enabled for this channel
+                const section = this.getChannelSection(channel);
+                const invertCheckbox = section.querySelector('input[type="checkbox"]');
+                const shouldInvert = invertCheckbox.checked;
+                
+                // Use actual image data with potential inversion
+                const canvas = this.createChannelCanvas(
+                    this.loadedImages.get(channel).image, 
+                    width, 
+                    height, 
+                    shouldInvert
+                );
                 const ctx = canvas.getContext('2d');
                 const imageData = ctx.getImageData(0, 0, width, height);
                 channelData[channel] = imageData.data;
@@ -377,9 +464,9 @@ class ChannelPacker {
     }
 
     /**
-     * Create canvas with channel image data
+     * Create canvas with channel image data and optional inversion
      */
-    createChannelCanvas(image, targetWidth, targetHeight) {
+    createChannelCanvas(image, targetWidth, targetHeight, shouldInvert = false) {
         const canvas = document.createElement('canvas');
         canvas.width = targetWidth;
         canvas.height = targetHeight;
@@ -391,6 +478,21 @@ class ChannelPacker {
         // Draw image scaled to target dimensions
         ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
         
+        // Apply inversion if requested
+        if (shouldInvert) {
+            const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+            const data = imageData.data;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = 255 - data[i];         // Red
+                data[i + 1] = 255 - data[i + 1]; // Green
+                data[i + 2] = 255 - data[i + 2]; // Blue
+                // Alpha channel (i + 3) remains unchanged
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+        }
+        
         return canvas;
     }
 
@@ -398,23 +500,29 @@ class ChannelPacker {
      * Display the packed result
      */
     displayResult(canvas) {
-        const resultElement = document.getElementById('result');
+        const resultElement = this.getResultElement();
         
         const title = document.createElement('h3');
-        title.textContent = '✅ Packed Result:';
+        title.textContent = '✅ Packed Result';
         
-        const info = document.createElement('p');
         const loadedChannels = Array.from(this.loadedImages.keys());
         const missingChannels = this.channels.filter(ch => !this.loadedImages.has(ch));
+        const invertedChannels = this.channels.filter(ch => {
+            if (!this.loadedImages.has(ch)) return false;
+            const section = this.getChannelSection(ch);
+            return section.querySelector('input[type="checkbox"]').checked;
+        });
         
+        const info = document.createElement('p');
         info.innerHTML = `
             <strong>Dimensions:</strong> ${canvas.width} × ${canvas.height}px<br>
             <strong>Loaded channels:</strong> ${loadedChannels.join(', ')}<br>
-            ${missingChannels.length > 0 ? `<strong>Filled channels:</strong> ${missingChannels.join(', ')}` : ''}
+            ${missingChannels.length > 0 ? `<strong>Filled channels:</strong> ${missingChannels.join(', ')}<br>` : ''}
+            ${invertedChannels.length > 0 ? `<strong>Inverted channels:</strong> ${invertedChannels.join(', ')}` : ''}
         `;
         info.style.marginBottom = '1rem';
         info.style.fontSize = '0.9rem';
-        info.style.color = '#666';
+        info.style.color = 'var(--medium-gray)';
         
         resultElement.innerHTML = '';
         resultElement.appendChild(title);
@@ -558,11 +666,6 @@ style.textContent = `
     
     .notification:hover {
         transform: scale(1.02);
-    }
-    
-    .drag-over {
-        border-color: #667eea !important;
-        background-color: rgba(102, 126, 234, 0.05);
     }
 `;
 document.head.appendChild(style);
