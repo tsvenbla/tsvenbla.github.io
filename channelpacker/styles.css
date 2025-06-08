@@ -83,11 +83,15 @@ article > header {
 h1 {
     margin: 0 0 var(--spacing-xs) 0;
     font-size: clamp(var(--font-size-2xl), 5vw, var(--font-size-4xl));
+    font-weight: 700;
+    color: var(--dark-gray);
+}
+
+.gradient-text {
     background: var(--accent-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    font-weight: 700;
 }
 
 hgroup p {
