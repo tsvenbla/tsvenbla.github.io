@@ -103,7 +103,7 @@ h1 {
     font-weight: 700;
 }
 
-.subtitle {
+hgroup p {
     margin: 0 0 var(--spacing-xl) 0;
     color: var(--medium-gray);
     font-size: var(--font-size-lg);
