@@ -43,14 +43,11 @@
         </section>
 
         <main>
+            <h2>Upload Channel Images</h2>
             <form>
-                <fieldset>
-                    <legend>Upload Channel Images</legend>
-                    
-                    <section data-channel="red">
-                        <header>
-                            <h3>Red Channel</h3>
-                        </header>
+                <fieldset data-channels>
+                    <fieldset data-channel="red">
+                        <legend>Red Channel</legend>
                         <button type="button">📁 Choose Image</button>
                         <input type="file" accept="image/*" aria-label="Upload red channel image">
                         <label>
@@ -60,12 +57,10 @@
                         <small id="red-invert-help">Useful for converting roughness to smoothness maps</small>
                         <figure role="img" aria-label="Red channel preview"></figure>
                         <small>Upload a grayscale image for the red channel</small>
-                    </section>
+                    </fieldset>
 
-                    <section data-channel="green">
-                        <header>
-                            <h3>Green Channel</h3>
-                        </header>
+                    <fieldset data-channel="green">
+                        <legend>Green Channel</legend>
                         <button type="button">📁 Choose Image</button>
                         <input type="file" accept="image/*" aria-label="Upload green channel image">
                         <label>
@@ -75,12 +70,10 @@
                         <small id="green-invert-help">Useful for converting roughness to smoothness maps</small>
                         <figure role="img" aria-label="Green channel preview"></figure>
                         <small>Upload a grayscale image for the green channel</small>
-                    </section>
+                    </fieldset>
 
-                    <section data-channel="blue">
-                        <header>
-                            <h3>Blue Channel</h3>
-                        </header>
+                    <fieldset data-channel="blue">
+                        <legend>Blue Channel</legend>
                         <button type="button">📁 Choose Image</button>
                         <input type="file" accept="image/*" aria-label="Upload blue channel image">
                         <label>
@@ -90,12 +83,10 @@
                         <small id="blue-invert-help">Useful for converting roughness to smoothness maps</small>
                         <figure role="img" aria-label="Blue channel preview"></figure>
                         <small>Upload a grayscale image for the blue channel</small>
-                    </section>
+                    </fieldset>
 
-                    <section data-channel="alpha">
-                        <header>
-                            <h3>Alpha Channel</h3>
-                        </header>
+                    <fieldset data-channel="alpha">
+                        <legend>Alpha Channel</legend>
                         <button type="button">📁 Choose Image</button>
                         <input type="file" accept="image/*" aria-label="Upload alpha channel image">
                         <label>
@@ -105,10 +96,10 @@
                         <small id="alpha-invert-help">Useful for converting roughness to smoothness maps</small>
                         <figure role="img" aria-label="Alpha channel preview"></figure>
                         <small>Upload a grayscale image for the alpha channel (optional)</small>
-                    </section>
+                    </fieldset>
                 </fieldset>
 
-                <fieldset>
+                <fieldset data-config>
                     <legend>Missing Channel Settings</legend>
                     
                     <label>
@@ -130,16 +121,16 @@
                     <small id="alpha-fill-help">How to fill missing Alpha channel</small>
                 </fieldset>
 
-                <section>
-                    <button type="button" disabled aria-describedby="pack-help">
+                <fieldset data-controls>
+                    <button type="button" id="pack-btn" disabled aria-describedby="pack-help">
                         🎯 Pack Channels
                     </button>
                     <small id="pack-help">Requires at least 2 images</small>
                     
-                    <button type="button" hidden>
+                    <button type="button" id="download-btn" hidden>
                         💾 Download Result
                     </button>
-                </section>
+                </fieldset>
 
                 <aside role="status" aria-live="polite" hidden>
                     <span aria-hidden="true"></span>
