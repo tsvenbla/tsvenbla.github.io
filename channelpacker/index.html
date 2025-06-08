@@ -7,6 +7,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="color-scheme" content="light dark">
     <script src="script.js" defer></script>
+    <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="tsvenbla" data-color="#FFDD00" data-emoji=""  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
     <link rel="canonical" href="https://tsvenbla.github.io/channelpacker">
     <title>tsvenbla's RGBA Channel Packer</title>
     <meta name="description" content="Free texture channel packer online! Pack multiple grayscale images into RGBA channels for efficient texture storage.">
@@ -30,16 +31,22 @@
         <header>
             <hgroup>
                 <a href="index.html" rel="nofollow noopener noreferrer" aria-label="Go to home page">
-                    <h1>🎨 RGBA Channel Packer</h1>
+                    <h1>🎨 <span class="gradient-text"><abbr title="Red Green Blue Alpha">RGBA</abbr> Channel Packer</span></h1>
                 </a>
-                <p>Combine grayscale images into a single RGBA texture</p>
+                <p>Combine grayscale images into a single <abbr title="Red Green Blue Alpha">RGBA</abbr> texture</p>
             </hgroup>
         </header>
         
         <section aria-labelledby="info-heading">
             <h2 id="info-heading">How it works:</h2>
             <p>Upload 2-4 grayscale images that will become the Red, Green, Blue, and Alpha channels of a single packed texture. Missing channels will be filled automatically. This technique is commonly used in game development and 3D graphics for efficient texture storage.</p>
+            <p><strong>🔒 Privacy-focused:</strong> All processing happens locally in your browser. No images are uploaded to any server - everything stays on your device.</p>
         </section>
+
+        <div class="donate-section">
+            <p>Find this tool helpful? Consider supporting its development:</p>
+            <!-- BuyMeACoffee button will be inserted here by the script -->
+        </div>
 
         <main>
             <h2>Upload Channel Images</h2>
@@ -98,7 +105,7 @@
                     <legend>Missing Channel Settings</legend>
                     
                     <label>
-                        Missing RGB channels:
+                        Missing <abbr title="Red Green Blue">RGB</abbr> channels:
                         <select aria-describedby="rgb-help">
                             <option value="black">Fill with Black (0)</option>
                             <option value="white">Fill with White (255)</option>
@@ -135,6 +142,10 @@
 
             <output aria-live="polite"></output>
         </main>
+
+        <footer>
+            <p>Made with ♥️ in Finland using <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages</a></p>
+        </footer>
     </article>
 </body>
 </html>
