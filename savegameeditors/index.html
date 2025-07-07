@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Save Game Editors</title>
+        <style>
+            :root {
+                --bg: #3c3c3c;
+                --text: #fff;
+                --accent: #4da6ff;
+            }
+
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                background: var(--bg);
+                color: var(--text);
+                font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                font-size: 16px;
+                line-height: 1.5;
+            }
+
+            a {
+                color: var(--accent);
+            }
+
+            header {
+                text-align: center;
+                padding: 2rem 1rem;
+                border-bottom: 1px solid #555;
+            }
+
+            main {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 2rem 1rem;
+            }
+
+            .editor-card {
+                background: #2f2f2f;
+                border: 1px solid #555;
+                border-radius: 8px;
+                padding: 1rem 1.25rem;
+                margin-bottom: 1rem;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            .editor-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            }
+
+            .editor-card h2 {
+                margin: 0 0 0.25rem;
+                font-size: 1.25rem;
+            }
+
+            .editor-card p {
+                margin: 0 0 0.75rem;
+                opacity: 0.85;
+            }
+        </style>
+    </head>
+
+    <body>
+        <header>
+            <h1>Save Game Editors</h1>
+            <p>Free & open-source editors for your favourite games</p>
+        </header>
+
+        <main id="editors"></main>
+
+        <script>
+            fetch("editors.json")
+                .then((r) => {
+                    if (!r.ok) throw new Error("Manifest not found");
+                    return r.json();
+                })
+                .then((list) => {
+                    const container = document.getElementById("editors");
+                    list.forEach((editor) => {
+                        const card = document.createElement("article");
+                        card.className = "editor-card";
+                        card.innerHTML = `
+            <h2>${editor.name}</h2>
+            ${editor.description ? `<p>${editor.description}</p>` : ""}
+            <a href="${editor.url}" target="_blank" rel="noopener">Open Editor</a>
+          `;
+                        container.appendChild(card);
+                    });
+                })
+                .catch((err) => {
+                    console.error(err);
+                    document.getElementById("editors").textContent =
+                        "Could not load editors list. Make sure editors.json exists in the repo.";
+                });
+        </script>
+    </body>
+
+</html>
