@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Amnesia: The Dark Descent - Save Editor</title>
+        <style>
+            html,
+            body {
+                background: #3c3c3c;
+                color: white;
+                font-family: system-ui, sans-serif;
+                font-size: 1rem;
+                line-height: 1.5;
+
+            }
+
+            a {
+                color: #4da6ff;
+                text-decoration: none;
+            }
+
+            nav {
+                padding: 0.5rem 2rem;
+            }
+
+            nav a:hover {
+                text-decoration: underline;
+            }
+
+            header {
+                padding: 2rem;
+                text-align: center;
+            }
+
+            aside {
+                background: #554c2f;
+                border-left: .3rem solid #ffcc00;
+                border-radius: .25rem;
+                padding: 1rem;
+                margin: 1rem auto;
+                max-width: fit-content
+            }
+
+            hr {
+                background-color: gray;
+                border-color: gray;
+                height: 0.1rem;
+                width: 95%;
+            }
+
+            main {
+                max-width: fit-content;
+                margin: 0 auto;
+                padding: 2rem 1rem;
+            }
+
+            fieldset {
+                border: 0.1rem solid gray;
+                border-radius: 1rem;
+                padding: 1rem;
+                background: #2f2f2f;
+                margin-bottom: 1.5rem;
+            }
+
+            label {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 0.75rem;
+                flex-wrap: wrap;
+            }
+
+            input[type="number"],
+            input[disabled] {
+                padding: 0.25rem 0.5rem;
+                border: 1px solid #777;
+                border-radius: 0.25rem;
+                background: #444;
+                color: white;
+            }
+
+            input[disabled] {
+                max-width: none;
+                width: 100%;
+                cursor: text;
+                margin: .25rem 0 1rem;
+            }
+
+            input[type="file"] {
+                margin-bottom: 1.5rem;
+            }
+
+            button {
+                background: #4da6ff;
+                color: white;
+                border: none;
+                padding: 0.6rem 1.25rem;
+                border-radius: 0.6rem;
+                cursor: pointer;
+                font-size: 1rem;
+            }
+
+            button:hover {
+                opacity: .85;
+            }
+
+            footer {
+                margin-block: 2rem;
+                text-align: center;
+            }
+
+            [role="alert"] {
+                color: #ff8080;
+                white-space: pre-wrap;
+                margin-top: 1rem;
+            }
+        </style>
+    </head>
+
+    <body>
+        <nav aria-label="Main navigation">
+            <a href="../index.html">👈 Back to all editors</a>
+        </nav>
+        <header>
+            <h1>Amnesia: The Dark Descent - Save Editor</h1>
+            <p>Upload your <code>.SAV</code> file, tweak values, and download the modified copy.</p>
+        </header>
+        <aside>
+            <details>
+                <summary>⚠️ Before proceeding, back up your save files.</summary>
+                <p>This tool could corrupt your data. Create backups of all original files before use. Use at your own risk.</p>
+            </details>
+        </aside>
+        <hr>
+        <main>
+            <section>
+                <h2>Upload save file</h2>
+                <label for="file">Choose save file:
+                    <input type="file" id="file" accept=".sav">
+                </label>
+            </section>
+
+            <form hidden>
+                <fieldset>
+                    <legend>Player stats</legend>
+                    <label for="health">Health (0-100)
+                        <input id="health" name="health" type="number" min="0" max="100" required>
+                    </label>
+                    <label for="sanity">Sanity (0-100)
+                        <input id="sanity" name="sanity" type="number" min="0" max="100" required>
+                    </label>
+                    <label for="lampoil">Lamp Oil (0-100)
+                        <input id="lampoil" name="lampoil" type="number" min="0" max="100" required>
+                    </label>
+                    <label for="tinderboxes">Tinderboxes (0-999)
+                        <input id="tinderboxes" name="tinderboxes" type="number" step="1" min="0" max="999" required>
+                    </label>
+                </fieldset>
+                <button type="button" id="download">Download modified save</button>
+            </form>
+
+            <p id="error" role="alert" aria-live="assertive"></p>
+
+            <section>
+                <h2>Typical save locations</h2>
+                <p>Can't locate your <code>.SAV</code>? The savegames are typically located in:</p>
+                <label>Windows
+                    <input type="text" value="%USERPROFILE%\Documents\Amnesia\Main\" disabled>
+                </label>
+                <label>macOS
+                    <input type="text" value="$HOME/Library/Application Support/Frictional Games/Amnesia/" disabled>
+                </label>
+                <label>Linux
+                    <input type="text" value="$HOME/.frictionalgames/Amnesia/Main/" disabled>
+                </label>
+            </section>
+        </main>
+        <hr>
+        <footer>
+            <a href="https://www.buymeacoffee.com/tsvenbla" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 40px !important;width: 145 !important;"></a><br>
+            <small>Bugs? <a href="https://github.com/tsvenbla/tsvenbla.github.io/issues" target="_blank" rel="noopener">Report them here</a>.</small>
+            <br><small>Made with ♥️ and ☕ in Finland</small>
+        </footer>
+
+        <script>
+            (() => { let e = document.getElementById("file"), t = document.querySelector("main form"), r = document.getElementById("error"), a = document.getElementById("download"), n = { health: "mfHealth", sanity: "mfSanity", lampoil: "mfLampOil", tinderboxes: "mlTinderboxes" }, l, i, o = [...t.querySelectorAll('input[type="number"]')]; e.addEventListener("change", () => { let a = e.files[0]; if (!a) return; let s = new FileReader; s.onload = () => { try { if ((l = new DOMParser().parseFromString(s.result, "application/xml")).querySelector("parsererror")) throw Error("File is not valid XML."); if (!(i = l.querySelector('class[type="cLuxPlayer_SaveData"][name="mPlayer"]'))) throw Error("Player data not found in save file."); o.forEach(e => { let t = i.querySelector(`var[name="${n[e.name]}"]`); if (!t) throw Error(`Missing value ${n[e.name]} in save file.`); e.value = t.getAttribute("val") }), r.textContent = "", t.hidden = !1, t.scrollIntoView({ behavior: "smooth" }) } catch (e) { r.textContent = e.message, t.hidden = !0 } }, s.readAsText(a) }), t.addEventListener("input", e => { if (!i || "number" !== e.target.type) return; let t = n[e.target.name], r = i.querySelector(`var[name="${t}"]`); r && r.setAttribute("val", e.target.value) }), a.addEventListener("click", () => { if (!l || !t.reportValidity()) return; let r = new XMLSerializer, a = new Blob([r.serializeToString(l)], { type: "text/plain" }), n = document.createElement("a"); n.href = URL.createObjectURL(a), n.download = (e.files[0]?.name || "amnesia_save") + "_edited.sav", n.click(), URL.revokeObjectURL(n.href) }) })();
+        </script>
+    </body>
+
+</html>
