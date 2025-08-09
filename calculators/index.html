@@ -37,8 +37,7 @@
 
 <header>
   <h1>Annual Loss Expectancy Calculator</h1>
-  <p>Formula: <code>SLE × ARO = ALE</code></p>
-  <p>Where <strong>SLE</strong> = Asset Value × Exposure Factor</p>
+  <p>Formula: <code><abbr title="Single-loss Expectancy">SLE</abbr> × <abbr title="Annual Rate of Occurrence">ARO</abbr> = <abbr title="Annual Loss Expectancy">ALE</abbr></code>, where <code>SLE = <abbr title="Asset Value">AV</abbr> × <abbr title="Exposure Factor">EF</abbr></code></p>
 </header>
 
 <main>
@@ -49,23 +48,23 @@
     <fieldset>
       <legend>Inputs</legend>
       
-      <label for="asset">Asset Value (AV, €):</label>
+      <label for="asset">Asset Value (refers to the monetary worth of an asset):</label>
       <input type="number" id="asset" name="asset" min="0" step="any" required>
       
-      <label for="ef">Exposure Factor (EF, decimal e.g. 0.5 = 50%):</label>
+      <label for="ef">Exposure Factor (percentage of asset lost or damaged, given in decimal, e.g. 50% = 0.5):</label>
       <input type="number" id="ef" name="ef" min="0" max="1" step="any" required>
       
-      <label for="aro">Annual Rate of Occurrence (ARO):</label>
+      <label for="aro">Annual Rate of Occurrence (e.g. once every forth year = 0.25):</label>
       <input type="number" id="aro" name="aro" min="0" step="any" required>
     </fieldset>
 
     <fieldset>
       <legend>Calculated Values</legend>
       
-      <label for="sle">Single-loss Expectancy (SLE, €):</label>
+      <label for="sle">Single-loss Expectancy:</label>
       <output id="sle" name="sle" for="asset ef">0.00</output>
       
-      <label for="ale">Annual Loss Expectancy (ALE, €):</label>
+      <label for="ale">Annual Loss Expectancy:</label>
       <output id="ale" name="ale" for="sle aro">0.00</output>
     </fieldset>
   </form>
@@ -74,6 +73,5 @@
 <footer>
   <p>&copy; 2025 ALE Calculator</p>
 </footer>
-
 </body>
 </html>
