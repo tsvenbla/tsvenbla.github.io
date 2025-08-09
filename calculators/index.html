@@ -29,7 +29,7 @@
   output {
     display: block;
     font-weight: bold;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
   }
 </style>
 </head>
@@ -37,28 +37,37 @@
 
 <header>
   <h1>Annual Loss Expectancy Calculator</h1>
-  <p>Calculate ALE using the formula:</p>
-  <p><code>(Asset Value × Exposure Factor) × Annual Rate of Occurrence</code></p>
+  <p>Formula: <code>SLE × ARO = ALE</code></p>
+  <p>Where <strong>SLE</strong> = Asset Value × Exposure Factor</p>
 </header>
 
 <main>
-  <form oninput="ale.value = ((+asset.value || 0) * (+ef.value || 0) * (+aro.value || 0)).toFixed(2)">
+  <form oninput="
+    sle.value = ((+asset.value || 0) * (+ef.value || 0)).toFixed(2);
+    ale.value = ((+sle.value || 0) * (+aro.value || 0)).toFixed(2);
+  ">
     <fieldset>
-      <legend>Input Values</legend>
+      <legend>Inputs</legend>
       
-      <label for="asset">Asset Value (AV):</label>
+      <label for="asset">Asset Value (AV, €):</label>
       <input type="number" id="asset" name="asset" min="0" step="any" required>
       
-      <label for="ef">Exposure Factor (EF, as decimal e.g. 0.4):</label>
-      <input type="number" id="ef" name="ef" min="0" step="any" required>
+      <label for="ef">Exposure Factor (EF, decimal e.g. 0.5 = 50%):</label>
+      <input type="number" id="ef" name="ef" min="0" max="1" step="any" required>
       
       <label for="aro">Annual Rate of Occurrence (ARO):</label>
       <input type="number" id="aro" name="aro" min="0" step="any" required>
-      
     </fieldset>
 
-    <output name="ale" for="asset ef aro">0.00</output>
-    <p><small>Result: Annual Loss Expectancy</small></p>
+    <fieldset>
+      <legend>Calculated Values</legend>
+      
+      <label for="sle">Single-loss Expectancy (SLE, €):</label>
+      <output id="sle" name="sle" for="asset ef">0.00</output>
+      
+      <label for="ale">Annual Loss Expectancy (ALE, €):</label>
+      <output id="ale" name="ale" for="sle aro">0.00</output>
+    </fieldset>
   </form>
 </main>
 
